@@ -1,0 +1,34 @@
+commands:
+  ac:
+    main-class: com.webcodepro.applecommander.ui.ac
+    system-exit: no
+    executable: ../../app/cli-ac/build/native/nativeCompile/ac-*
+  acx:
+    main-class: io.github.applecommander.acx.Main
+    system-exit: yes
+    executable: ../../app/cli-acx/build/native/nativeCompile/acx-*
+
+tests:
+  - name: ticket192-acx
+    variables:
+      # All arrays must be same length -- only iterated over, not matrixed
+      flag: ["--dos", "--prodos", "--pascal"]
+      disk: ["mydisk.dsk", "mydisk.po", "mydisk.po"]
+    steps:
+      - command: acx mkdisk -d $disk $flag
+      - command: acx import -d $disk src/main/resources/testfile.txt --name TESTFILE
+      - command: acx rm -d $disk TESTFILE
+      - command: acx import -d $disk src/main/resources/testfile.txt --name TESTFILE
+  - name: ticket192-ac
+    variables:
+      # All arrays must be same length -- only iterated over, not matrixed
+      flag: ["-dos140", "-pro140", "-pas140"]
+      volname: ["", "TEST", "TEST"] # blank will be skipped
+      disk: ["mydisk.dsk", "mydisk.po", "mydisk.po"]
+    steps:
+      - command: ac $flag $disk $volname
+      - command: ac -pt $disk TESTFILE
+        stdin: file:src/main/resources/testfile.txt
+      - command: ac -d $disk TESTFILE
+      - command: ac -pt $disk TESTFILE
+        stdin: file:src/main/resources/testfile.txt

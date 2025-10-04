@@ -1,0 +1,41 @@
+plugins {
+    id 'org.springframework.boot' version "2.7.7"
+    id 'java'
+    id 'application'
+}
+
+group = 'io.github.a2geek'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = 21
+    targetCompatibility = 21
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "info.picocli:picocli:4.7.7"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.0"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.20.0"
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // https://github.com/tginsberg/junit5-system-exit
+    testImplementation("com.ginsberg:junit5-system-exit:2.0.2")
+}
+
+test {
+    useJUnitPlatform()
+
+    def junit5SystemExit = configurations.testRuntimeClasspath.files
+            .find { it.name.contains('junit5-system-exit') }
+    jvmArgumentProviders.add({["-javaagent:$junit5SystemExit"]} as CommandLineArgumentProvider)
+}
+
+application {
+    mainClass = "io.github.a2geek.clth.Main"
+}
