@@ -102,7 +102,7 @@ public class ExecuteTests {
             String document = new String(inputStream.readAllBytes());
             Config config = Config.load(document);
 
-            return Utility.buildTestCases(config)
+            return Utility.buildTestSuites(config)
                     .map(t -> Arguments.of(t.commands(), t.testName(), t.variables(), t.steps()));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
