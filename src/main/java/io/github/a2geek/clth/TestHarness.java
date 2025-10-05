@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class TestHarness {
-    public static void runSuite(TestSuite testSuite, TestRunner runner, FilePreservation filePreservation) {
+    public static void run(TestSuite testSuite, TestRunner runner, FilePreservation filePreservation) {
         Map<String,File> testCaseFiles = new HashMap<>();
         for (Config.Step step : testSuite.steps()) {
             try {

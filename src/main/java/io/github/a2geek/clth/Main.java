@@ -37,7 +37,7 @@ public class Main implements Callable<Integer> {
         for (Path testFile : testFiles) {
             Config config = Config.load(Files.readString(testFile));
             TestSuite.build(config).forEach(singleTestCase -> {
-                TestHarness.runSuite(singleTestCase, this::execute, filePreservation);
+                TestHarness.run(singleTestCase, this::execute, filePreservation);
             });
         }
         return 0;

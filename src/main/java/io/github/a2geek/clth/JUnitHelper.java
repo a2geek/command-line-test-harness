@@ -14,7 +14,7 @@ import static com.ginsberg.junit.exit.assertions.SystemExitAssertion.assertThatC
 import static com.ginsberg.junit.exit.assertions.SystemExitAssertion.assertThatDoesNotCallSystemExit;
 
 public class JUnitHelper {
-    public static int junitExecute(Config.Command command, List<String> parameters, InputStream stdin, OutputStream stdout, OutputStream stderr) {
+    public static int execute(Config.Command command, List<String> parameters, InputStream stdin, OutputStream stdout, OutputStream stderr) {
         InputStream oldStdin = System.in;
         PrintStream oldStdout = System.out;
         PrintStream oldStderr = System.err;

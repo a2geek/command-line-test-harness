@@ -11,7 +11,7 @@ public class ExecuteTests {
     @ParameterizedTest(name = "{1}: {2}")
     @MethodSource("testCases")
     public void test(TestSuite testSuite, String name, String parameters) throws Exception {
-        TestHarness.runSuite(testSuite, JUnitHelper::junitExecute, TestHarness.FilePreservation.DELETE);
+        TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.FilePreservation.DELETE);
     }
 
     public static Stream<Arguments> testCases() {
