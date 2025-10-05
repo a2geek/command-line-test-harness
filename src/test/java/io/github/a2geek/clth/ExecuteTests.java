@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 public class ExecuteTests {
     @ParameterizedTest(name = "{1}: {2}")
     @MethodSource("testCases")
-    public void test(TestSuite testSuite, String name, String parameters) throws Exception {
+    public void test(TestSuite testSuite, String name, String parameters) {
         TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.FilePreservation.DELETE);
     }
 

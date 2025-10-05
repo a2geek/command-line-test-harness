@@ -36,9 +36,7 @@ public class Main implements Callable<Integer> {
     public Integer call() throws Exception {
         for (Path testFile : testFiles) {
             Config config = Config.load(Files.readString(testFile));
-            TestSuite.build(config).forEach(singleTestCase -> {
-                TestHarness.run(singleTestCase, this::execute, filePreservation);
-            });
+            TestSuite.build(config).forEach(testSuite -> TestHarness.run(testSuite, this::execute, filePreservation));
         }
         return 0;
     }
@@ -49,7 +47,7 @@ public class Main implements Callable<Integer> {
             String glob = String.format("glob:%s", path.getFileName());
             PathMatcher matcher = FileSystems.getDefault().getPathMatcher(glob);
 
-            Path exe = null;
+            Path exe;
             try (Stream<Path> paths = Files.find(path.getParent(), 1,
                     (file, attr) -> matcher.matches(file.getFileName()))) {
                 exe = paths.findFirst().orElseThrow(() -> {
