@@ -3,10 +3,7 @@ package io.github.a2geek.clth;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class TestHarness {
@@ -63,22 +60,7 @@ public class TestHarness {
                 // Setup stdin
                 InputStream stdin = InputStream.nullInputStream();
                 if (step.stdin() != null) {
-                    byte[] data = step.stdin().getBytes();
-                    if (step.stdin().startsWith("file:")) {
-                        data = Files.readAllBytes(Path.of(step.stdin().substring(5)));
-                    }
-                    else if (step.stdin().startsWith("$")) {
-                        String name = step.stdin().substring(1);
-                        if (testSuite.files().containsKey(name)) {
-                            Config.TestFile testFile = testSuite.files().get(name);
-                            data = testFile.contentAsBytes();
-                        }
-                        else {
-                            var msg = String.format("Expecting file named '%s' but none found", name);
-                            throw new RuntimeException(msg);
-                        }
-                    }
-                    stdin = new ByteArrayInputStream(data);
+                    stdin = new ByteArrayInputStream(evaluateAsBytes(step.stdin(), testSuite.files()));
                 }
 
                 // Setup stdout & stderr
@@ -94,11 +76,13 @@ public class TestHarness {
                 }
 
                 // Check output
-                if (!step.stdout().equals(stdout.toString())) {
+                byte[] expectedStdout = evaluateAsBytes(step.stdout(), testSuite.files());
+                if (!Arrays.equals(expectedStdout, stdout.toByteArray())) {
                     errors.add("STDOUT does not match");
                     System.out.println(stdout);
                 }
-                if (!step.stderr().equals(stderr.toString())) {
+                byte[] exptectedStderr = evaluateAsBytes(step.stderr(), testSuite.files());
+                if (!Arrays.equals(exptectedStderr, stderr.toByteArray())) {
                     errors.add("STDERR does not match");
                     System.out.println(stderr);
                 }
@@ -110,6 +94,25 @@ public class TestHarness {
                 throw new UncheckedIOException(e);
             }
         }
+    }
+
+    private static byte[] evaluateAsBytes(String varname, Map<String,Config.TestFile> files) throws IOException {
+        byte[] data = varname.getBytes();
+        if (varname.startsWith("file:")) {
+            data = Files.readAllBytes(Path.of(varname.substring(5)));
+        }
+        else if (varname.startsWith("$")) {
+            String name = varname.substring(1);
+            if (files.containsKey(name)) {
+                Config.TestFile testFile = files.get(name);
+                data = testFile.contentAsBytes();
+            }
+            else {
+                var msg = String.format("Expecting file named '%s' but none found", name);
+                throw new RuntimeException(msg);
+            }
+        }
+        return data;
     }
 
     public enum FilePreservation {

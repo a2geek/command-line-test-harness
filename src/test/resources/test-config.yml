@@ -7,6 +7,11 @@ files:
   mixed:
     type: text
     content: Hello World!
+  expectedHelp:
+    type: text
+    content: |
+      Usage: cat [ --lower | --upper ] FILE...
+      Concatenate FILE(s) to standard output.
 
 tests:
   - name: test case behavior
@@ -20,13 +25,13 @@ tests:
   - name: test help
     steps:
       - command: cat --help
-        stdout: |
-          Usage: cat [ --lower | --upper ] FILE...
-          Concatenate FILE(s) to standard output.
+        # Using "file" entry
+        stdout: $expectedHelp
   - name: test no args
     steps:
       - command: cat
         rc: 1
+        # Embedding expected output
         stderr: |
           Usage: cat [ --lower | --upper ] FILE...
           Concatenate FILE(s) to standard output.
