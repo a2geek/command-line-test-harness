@@ -78,6 +78,9 @@ The real variable is based on the type, which impacts the initial state of the f
 
 ### Tests
 
+> Note that any file references will be _shared_ across the test suite. If there are unwanted changes to the test file,
+> be certain that they are in independent suites.
+
 These are a unit test, and it compromises a test "suite" of multiple steps.
 
 ```yaml

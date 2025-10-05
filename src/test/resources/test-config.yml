@@ -1,0 +1,32 @@
+commands:
+  cat:
+    main-class: io.github.a2geek.clth.CatFile
+    system-exit: yes
+
+files:
+  mixed:
+    type: text
+    content: Hello World!
+
+tests:
+  - name: test case behavior
+    steps:
+      - command: cat $mixed
+        stdout: Hello World!
+      - command: cat --lower $mixed
+        stdout: hello world!
+      - command: cat --upper $mixed
+        stdout: HELLO WORLD!
+  - name: test help
+    steps:
+      - command: cat --help
+        stdout: |
+          Usage: cat [ --lower | --upper ] FILE...
+          Concatenate FILE(s) to standard output.
+  - name: test no args
+    steps:
+      - command: cat
+        rc: 1
+        stderr: |
+          Usage: cat [ --lower | --upper ] FILE...
+          Concatenate FILE(s) to standard output.

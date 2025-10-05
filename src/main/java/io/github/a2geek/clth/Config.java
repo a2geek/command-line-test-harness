@@ -28,7 +28,7 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
                           @JsonInclude(NON_EMPTY) String executable,
                           @JsonProperty("system-exit") boolean systemExit) {}
     public record TestCase(@JsonInclude(NON_EMPTY) String name,
-                           Map<String,Object> variables,
+                           @JsonSetter(nulls=Nulls.AS_EMPTY) Map<String,Object> variables,
                            @JsonInclude(NON_EMPTY) List<Step> steps) {}
     public record Step(@JsonInclude(NON_EMPTY) String command,
                        @JsonSetter(nulls=Nulls.AS_EMPTY)String stdin,

@@ -24,8 +24,10 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    // https://github.com/tginsberg/junit5-system-exit
-    testImplementation("com.ginsberg:junit5-system-exit:2.0.2")
+
+    // See: https://github.com/tginsberg/junit5-system-exit
+    // Usually this is a testImplementation, but since there is support code in the final jar, it must be this way!
+    implementation("com.ginsberg:junit5-system-exit:2.0.2")
 }
 
 test {
