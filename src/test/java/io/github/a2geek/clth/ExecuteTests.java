@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 public class ExecuteTests {
     @ParameterizedTest(name = "{1}: {2}")
     @MethodSource("testCases")
-    public void test(TestHarness.TestSuite testSuite, String name, String parameters) throws Exception {
+    public void test(TestSuite testSuite, String name, String parameters) throws Exception {
         TestHarness.runSuite(testSuite, JUnitHelper::junitExecute, TestHarness.FilePreservation.DELETE);
     }
 
@@ -20,7 +20,7 @@ public class ExecuteTests {
             String document = new String(inputStream.readAllBytes());
             Config config = Config.load(document);
 
-            return TestHarness.buildTestSuites(config)
+            return TestSuite.build(config)
                     .map(t -> Arguments.of(t, t.testName(), String.join(" ", t.variables().values())));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
