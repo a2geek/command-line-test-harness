@@ -10,8 +10,8 @@ import java.util.stream.Stream;
 public class ExecuteTests {
     @ParameterizedTest(name = "{1}: {2}")
     @MethodSource("testCases")
-    public void test(Utility.TestSuite testSuite, String name, String parameters) throws Exception {
-        Utility.runSuite(testSuite, Utility::junitExecute, Utility.FilePreservation.DELETE);
+    public void test(TestHarness.TestSuite testSuite, String name, String parameters) throws Exception {
+        TestHarness.runSuite(testSuite, JUnitHelper::junitExecute, TestHarness.FilePreservation.DELETE);
     }
 
     public static Stream<Arguments> testCases() {
@@ -20,7 +20,7 @@ public class ExecuteTests {
             String document = new String(inputStream.readAllBytes());
             Config config = Config.load(document);
 
-            return Utility.buildTestSuites(config)
+            return TestHarness.buildTestSuites(config)
                     .map(t -> Arguments.of(t, t.testName(), String.join(" ", t.variables().values())));
         } catch (IOException e) {
             throw new UncheckedIOException(e);

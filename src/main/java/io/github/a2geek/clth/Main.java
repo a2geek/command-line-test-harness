@@ -24,20 +24,20 @@ public class Main implements Callable<Integer> {
 
     @Option(names = "--keep-files", description = "Keep all temporary test files for review")
     public void selectKeepFiles(boolean flag) {
-        filePreservation = Utility.FilePreservation.KEEP;
+        filePreservation = TestHarness.FilePreservation.KEEP;
     }
     @Option(names = "--delete-files", description = "Delete all temporary test files (default)")
     public void selectDeleteFiles(boolean flag) {
-        filePreservation = Utility.FilePreservation.DELETE;
+        filePreservation = TestHarness.FilePreservation.DELETE;
     }
-    private Utility.FilePreservation filePreservation = Utility.FilePreservation.DELETE;
+    private TestHarness.FilePreservation filePreservation = TestHarness.FilePreservation.DELETE;
 
     @Override
     public Integer call() throws Exception {
         for (Path testFile : testFiles) {
             Config config = Config.load(Files.readString(testFile));
-            Utility.buildTestSuites(config).forEach(singleTestCase -> {
-                Utility.runSuite(singleTestCase, this::execute, filePreservation);
+            TestHarness.buildTestSuites(config).forEach(singleTestCase -> {
+                TestHarness.runSuite(singleTestCase, this::execute, filePreservation);
             });
         }
         return 0;
