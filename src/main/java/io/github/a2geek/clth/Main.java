@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
-@Command(name = "clth", mixinStandardHelpOptions = true, description = "Command Line Test Harness")
+@Command(name = "clth", mixinStandardHelpOptions = true, description = "Command Line Test Harness", versionProvider = Main.VersionProvider.class)
 public class Main implements Callable<Integer> {
     public static void main(String... args) {
         int exitCode = new CommandLine(new Main()).execute(args);
@@ -96,6 +96,14 @@ public class Main implements Callable<Integer> {
             throw new UncheckedIOException(ex);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static class VersionProvider implements IVersionProvider {
+        @Override
+        public String[] getVersion() throws Exception {
+            Package p = Main.class.getPackage();
+            return new String[] { p.getImplementationTitle(), p.getImplementationVersion() };
         }
     }
 }

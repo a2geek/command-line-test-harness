@@ -41,3 +41,18 @@ test {
 application {
     mainClass = "io.github.a2geek.clth.Main"
 }
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': "Command Line Test Harness 'clth'",
+                   'Implementation-Version': project.version
+    }
+}
+
+bootJar {
+    archiveBaseName = 'clth'
+    manifest {
+        attributes 'Implementation-Title': "Command Line Test Harness 'clth'",
+                   'Implementation-Version': project.version
+    }
+}
