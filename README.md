@@ -1,5 +1,8 @@
 # Command Line Test Harness
 
+[![Current Release](https://img.shields.io/github/release/a2geek/command-line-test-harness.svg)](https://github.com/a2geek/command-line-test-harness/releases)
+![License](https://img.shields.io/github/license/a2geek/command-line-test-harness)
+
 > Note: Even though the unit test capacity is targeted to Java applications, the executable component should be
 > readily usable by any executable.
 
