@@ -9,7 +9,9 @@ import java.util.function.Consumer;
 public class TestHarness {
     public static void run(TestSuite testSuite, TestRunner runner, FilePreservation filePreservation) {
         Map<String,File> testCaseFiles = new HashMap<>();
-        for (Config.Step step : testSuite.steps()) {
+        System.out.printf("Test '%s' %s\n", testSuite.testName(), testSuite.variables());
+        for (int n=0; n<testSuite.steps().size(); n++) {
+            Config.Step step = testSuite.steps().get(n);
             try {
                 String[] parts = step.command().split(" ");
 
@@ -21,7 +23,7 @@ public class TestHarness {
 
                 // Setup variables
                 List<String> parameters = new ArrayList<>();
-                for (int i = 1; i < parts.length; i++) {
+                for (int i=1; i<parts.length; i++) {
                     if (parts[i].startsWith("$")) {
                         String varname = parts[i].substring(1);
                         // Simple variable
@@ -57,6 +59,8 @@ public class TestHarness {
                     parameters.removeLast();
                 }
 
+                System.out.printf("\t%d: %s %s\n", n+1, parts[0], String.join(" ", parameters));
+
                 // Setup stdin
                 InputStream stdin = InputStream.nullInputStream();
                 if (step.stdin() != null) {
@@ -77,12 +81,12 @@ public class TestHarness {
 
                 // Check output
                 byte[] expectedStdout = evaluateAsBytes(step.stdout(), testSuite.files());
-                if (!Arrays.equals(expectedStdout, stdout.toByteArray())) {
+                if (!step.match().matches(new String(expectedStdout), stdout.toString())) {
                     errors.add("STDOUT does not match");
                     System.out.println(stdout);
                 }
-                byte[] exptectedStderr = evaluateAsBytes(step.stderr(), testSuite.files());
-                if (!Arrays.equals(exptectedStderr, stderr.toByteArray())) {
+                byte[] expectedStderr = evaluateAsBytes(step.stderr(), testSuite.files());
+                if (!step.match().matches(new String(expectedStderr), stderr.toString())) {
                     errors.add("STDERR does not match");
                     System.out.println(stderr);
                 }

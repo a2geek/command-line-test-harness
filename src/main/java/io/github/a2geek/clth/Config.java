@@ -1,9 +1,6 @@
 package io.github.a2geek.clth;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -12,6 +9,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 
@@ -31,11 +29,36 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
                            @JsonSetter(nulls=Nulls.AS_EMPTY) Map<String,Object> variables,
                            @JsonInclude(NON_EMPTY) List<Step> steps) {}
     public record Step(@JsonInclude(NON_EMPTY) String command,
-                       @JsonSetter(nulls=Nulls.AS_EMPTY)String stdin,
-                       @JsonSetter(nulls=Nulls.AS_EMPTY)String stdout,
-                       @JsonSetter(nulls=Nulls.AS_EMPTY)String stderr,
-                       @JsonProperty("rc") int returnCode) {}
+                       @JsonSetter(nulls=Nulls.AS_EMPTY) String stdin,
+                       @JsonSetter(nulls=Nulls.AS_EMPTY) String stdout,
+                       @JsonSetter(nulls=Nulls.AS_EMPTY) String stderr,
+                       MatchType match,
+                       @JsonProperty("rc") int returnCode) {
+        @Override
+        public MatchType match() {
+            return match == null ? MatchType.exact : match;
+        }
+    }
+
     public enum FileType { text, binary, temporary }
+
+    public enum MatchType {
+        exact(String::equals),
+        trim((a,b) -> a.trim().equals(b.trim())),
+        ignore((a,b) -> true),
+        contains(String::contains);
+
+        private final BiFunction<String,String,Boolean> matchFn;
+
+        MatchType(BiFunction<String,String,Boolean> matchFn) {
+            this.matchFn = matchFn;
+        }
+
+        public boolean matches(String expected, String actual) {
+            return matchFn.apply(expected, actual);
+        }
+    }
+
     public record TestFile(FileType type, String content, String prefix, String suffix) {
         public byte[] contentAsBytes() {
             return switch (type) {

@@ -22,8 +22,6 @@ public class JUnitHelper {
             Class<?> clazz = Class.forName(command.mainClass());
             Method method = clazz.getMethod("main", String[].class);
 
-            System.out.printf("Command = <cmd> %s\n", String.join(" ", parameters));
-
             // Execute
             System.setIn(stdin);
             System.setOut(new PrintStream(stdout));

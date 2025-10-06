@@ -27,6 +27,7 @@ tests:
       - command: cat --help
         # Using "file" entry
         stdout: $expectedHelp
+        match: contains
   - name: test no args
     steps:
       - command: cat
@@ -35,3 +36,4 @@ tests:
         stderr: |
           Usage: cat [ --lower | --upper ] FILE...
           Concatenate FILE(s) to standard output.
+        match: trim

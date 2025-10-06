@@ -57,8 +57,6 @@ public class Main implements Callable<Integer> {
             }
 
             parameters.addFirst(exe.toString());
-            System.out.printf("Command = %s\n", String.join(" ", parameters));
-
             ProcessBuilder builder = new ProcessBuilder(parameters);
 
             // Setup
