@@ -28,6 +28,100 @@ Command Line Test Harness
   -V, --version        Print version information and exit.
 ```
 
+Sample successful run:
+
+```shell
+$ clth app-tests/src/test/resources/clth-config.yml 
+Test 'no args' {}
+	1: clth 
+Test 'help flag' {}
+	1: clth --help
+Test 'version flag' {}
+	1: clth --version
+```
+
+Sample error run:
+
+```shell
+$ clth app-tests/src/test/resources/clth-config.yml 
+Test 'no args' {}
+	1: clth 
+Test 'help flag' {}
+	1: clth --help
+Test 'version flag' {}
+	1: clth --version
+Command Line Test Harness 'clth'
+1.1-SNAPSHOT
+
+java.lang.RuntimeException: Errors encountered: [STDOUT does not match]
+	at io.github.a2geek.clth.TestHarness.run(TestHarness.java:112)
+	at io.github.a2geek.clth.app.Main.lambda$call$0(Main.java:59)
+	at java.base@21.0.7/java.util.stream.SpinedBuffer$1Splitr.forEachRemaining(SpinedBuffer.java:364)
+	at java.base@21.0.7/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:762)
+	at io.github.a2geek.clth.app.Main.call(Main.java:59)
+	at io.github.a2geek.clth.app.Main.call(Main.java:35)
+	at picocli.CommandLine.executeUserObject(CommandLine.java:2031)
+	at picocli.CommandLine.access$1500(CommandLine.java:148)
+	at picocli.CommandLine$RunLast.executeUserObjectOfLastSubcommandWithSameParent(CommandLine.java:2469)
+	at picocli.CommandLine$RunLast.handle(CommandLine.java:2461)
+	at picocli.CommandLine$RunLast.handle(CommandLine.java:2423)
+	at picocli.CommandLine$AbstractParseResultHandler.execute(CommandLine.java:2277)
+	at picocli.CommandLine$RunLast.execute(CommandLine.java:2425)
+	at picocli.CommandLine.execute(CommandLine.java:2174)
+	at io.github.a2geek.clth.app.Main.main(Main.java:38)
+	at java.base@21.0.7/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
+```
+
+## Using in a project
+
+> Important note: If you use `System.exit()` *and* are doing a native compile, the agent that "catches" the exit call 
+> interferes with the Graal native compile. This can be circumvented by separating the application from the command line
+> testing. Please note the (app)[app/] and (app-tests)[app-tests/] structure in this project.
+
+There are helper classes to assist in setting up the test cases and executing. However, as the developer, you will need to
+stitch them together.
+
+A sample unit test:
+
+> Please note that the only argument required is the `TestSuite`. The other two arguments (`name`, `parameters`) are only
+> used to give the test a human-readable name via the `@ParameterizedTest` annotation.
+
+```java
+@ParameterizedTest(name = "{1}: {2}")
+@MethodSource("testCases")
+public void test(TestSuite testSuite, String name, String parameters) {
+    TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.FilePreservation.DELETE);
+}
+
+public static Stream<Arguments> testCases() {
+    try (InputStream inputStream = ExecuteTests.class.getResourceAsStream("/test-config.yml")) {
+        assert inputStream != null;
+        String document = new String(inputStream.readAllBytes());
+        Config config = Config.load(document);
+
+        return TestSuite.build(config)
+                .map(t -> Arguments.of(t, t.testName(), String.join(" ", t.variables().values())));
+    } catch (IOException e) {
+        throw new UncheckedIOException(e);
+    }
+}
+```
+
+In addition, the Java agent needs to be added for unit tests -- *if you are using `System.exit()` in the application*.
+
+> This is the Gradle configuration, but [junit5-system-exit](https://github.com/tginsberg/junit5-system-exit) also includes
+> how to configure the tool for Maven as well.
+
+```groovy
+test {
+    useJUnitPlatform()
+
+    def junit5SystemExit = configurations.testRuntimeClasspath.files
+            .find { it.name.contains('junit5-system-exit') }
+    jvmArgumentProviders.add({["-javaagent:$junit5SystemExit"]} as CommandLineArgumentProvider)
+}
+```
+
 ## Config file
 
 The configuration file is done through a yaml file. Note that file paths must work both in the project and out of the 
