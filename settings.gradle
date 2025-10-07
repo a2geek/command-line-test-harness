@@ -1,0 +1,5 @@
+rootProject.name = 'clth'
+
+include 'lib'
+include 'app'
+include 'app-tests'

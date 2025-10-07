@@ -1,130 +1,17 @@
 plugins {
-    id 'org.springframework.boot' version "3.5.6"
     id 'java'
-    id 'application'
-    id 'maven-publish'
-    id 'signing'
 }
 
 group = 'io.github.a2geek'
-version = '1.0'
-ext.isSnapshotVersion = version.endsWith("SNAPSHOT")
-ext.isReleaseVersion = !ext.isSnapshotVersion
+version = '1.1'
+
+ext {
+    isSnapshotVersion = version.endsWith("SNAPSHOT")
+    isReleaseVersion = !ext.isSnapshotVersion
+}
 
 java {
     sourceCompatibility = 21
     targetCompatibility = 21
 }
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation "info.picocli:picocli:4.7.7"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.0"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.20.0"
-
-    testImplementation platform('org.junit:junit-bom:6.0.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    // See: https://github.com/tginsberg/junit5-system-exit
-    // Usually this is a testImplementation, but since there is support code in the final jar, it must be this way!
-    implementation("com.ginsberg:junit5-system-exit:2.0.2")
-}
-
-test {
-    useJUnitPlatform()
-
-    def junit5SystemExit = configurations.testRuntimeClasspath.files
-            .find { it.name.contains('junit5-system-exit') }
-    jvmArgumentProviders.add({["-javaagent:$junit5SystemExit"]} as CommandLineArgumentProvider)
-}
-
-application {
-    mainClass = "io.github.a2geek.clth.Main"
-}
-
-jar {
-    manifest {
-        attributes 'Implementation-Title': "Command Line Test Harness 'clth'",
-                   'Implementation-Version': project.version
-    }
-}
-
-bootJar {
-    archiveBaseName = 'clth'
-    manifest {
-        attributes 'Implementation-Title': "Command Line Test Harness 'clth'",
-                   'Implementation-Version': project.version
-    }
-}
-
-javadoc {
-    title = "Command Line Test Harness ${project.version}"
-    source = sourceSets.main.allJava
-    options.addStringOption('Xdoclint:none', '-quiet')
-}
-
-tasks.register('javadocJar', Jar) {
-    archiveClassifier = 'javadoc'
-    from javadoc
-}
-
-tasks.register('sourcesJar', Jar) {
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId = 'io.github.a2geek'
-            artifactId = "clth"
-
-            from components.java
-
-            artifact sourcesJar
-            artifact javadocJar
-            pom {
-                name = 'clth'
-                description = "Command Line Test Harness 'clth' is a test utility for command line applications."
-                url = 'https://github.com/a2geek/command-line-test-harness'
-                licenses {
-                    license {
-                        name = 'The GNU General Public License (GPL) Version 3, 29 June 2007'
-                        url = 'https://www.gnu.org/licenses/gpl-3.0.html'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'robgreene'
-                        name = 'Rob Greene'
-                        email = 'robgreene@gmail.com'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:https://github.com/a2geek/command-line-test-harness.git'
-                    developerConnection = 'scm:git@github.com:a2geek/command-line-test-harness.git'
-                    url = 'https://github.com/a2geek/command-line-test-harness'
-                }
-            }
-            repositories {
-                maven {
-                    def releasesRepoUrl = "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2"
-                    def snapshotsRepoUrl = "https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/"
-                    url = isSnapshotVersion ? snapshotsRepoUrl : releasesRepoUrl
-                    credentials {
-                        username = findProperty('ossrhUsername')
-                        password = findProperty('ossrhPassword')
-                    }
-                }
-            }
-        }
-    }
-}
-
-signing {
-    sign publishing.publications.mavenJava
-}

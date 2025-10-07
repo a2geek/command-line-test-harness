@@ -26,13 +26,32 @@ import java.util.stream.Stream;
 
 public class ExecuteTests {
     @ParameterizedTest(name = "{1}: {2}")
-    @MethodSource("testCases")
-    public void test(TestSuite testSuite, String name, String parameters) {
+    @MethodSource("testCasesForSamples")
+    public void testSamples(TestSuite testSuite, String name, String parameters) {
         TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.FilePreservation.DELETE);
     }
 
-    public static Stream<Arguments> testCases() {
+    public static Stream<Arguments> testCasesForSamples() {
         try (InputStream inputStream = ExecuteTests.class.getResourceAsStream("/test-config.yml")) {
+            assert inputStream != null;
+            String document = new String(inputStream.readAllBytes());
+            Config config = Config.load(document);
+
+            return TestSuite.build(config)
+                    .map(t -> Arguments.of(t, t.testName(), String.join(" ", t.variables().values())));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    @ParameterizedTest(name = "{1}: {2}")
+    @MethodSource("testCasesForCLTH")
+    public void testCLTH(TestSuite testSuite, String name, String parameters) {
+        TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.FilePreservation.DELETE);
+    }
+
+    public static Stream<Arguments> testCasesForCLTH() {
+        try (InputStream inputStream = ExecuteTests.class.getResourceAsStream("/clth-config.yml")) {
             assert inputStream != null;
             String document = new String(inputStream.readAllBytes());
             Config config = Config.load(document);

@@ -61,18 +61,15 @@ public class JUnitHelper {
                 }
                 return rc.getFirst();
             } else {
-                List<Object> rc = new ArrayList<>();
                 assertThatDoesNotCallSystemExit(() -> {
                     try {
-                        rc.add(method.invoke(null, new Object[]{parameters.toArray(new String[0])}));
+                        method.invoke(null, new Object[]{parameters.toArray(new String[0])});
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new RuntimeException(e);
                     }
                 });
-                if (rc.getFirst() instanceof Integer n) {
-                    return n;
-                }
-                throw new RuntimeException("CLI did not return a numeric value");
+                // 'main' method is a void method, so we assume 0
+                return 0;
             }
         } catch (ClassNotFoundException|NoSuchMethodException ex) {
             throw new RuntimeException(ex);
