@@ -2,6 +2,9 @@ commands:
   cat:
     main-class: io.github.a2geek.clth.CatFile
     system-exit: yes
+  echo:
+    main-class: io.github.a2geek.clth.Echo
+    system-exit: no
 
 files:
   mixed:
@@ -37,3 +40,13 @@ tests:
           Usage: cat [ --lower | --upper ] FILE...
           Concatenate FILE(s) to standard output.
         match: trim
+  - name: empty echo
+    steps:
+      - command: echo
+        match: trim
+        stdout: ""
+  - name: normal echo
+    steps:
+      - command: echo Hello World
+        match: exact
+        stdout: "Hello World"

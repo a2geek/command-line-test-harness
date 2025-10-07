@@ -26,12 +26,12 @@ import java.util.stream.Stream;
 
 public class ExecuteTests {
     @ParameterizedTest(name = "{1}: {2}")
-    @MethodSource("testCasesForCatFile")
-    public void testCatFile(TestSuite testSuite, String name, String parameters) {
+    @MethodSource("testCasesForSamples")
+    public void testSamples(TestSuite testSuite, String name, String parameters) {
         TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.FilePreservation.DELETE);
     }
 
-    public static Stream<Arguments> testCasesForCatFile() {
+    public static Stream<Arguments> testCasesForSamples() {
         try (InputStream inputStream = ExecuteTests.class.getResourceAsStream("/test-config.yml")) {
             assert inputStream != null;
             String document = new String(inputStream.readAllBytes());
