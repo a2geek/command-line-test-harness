@@ -25,9 +25,9 @@ jobs:
           - label: ubuntu-24.04-arm
             os: linux
             arch: aarch64
-          - label: windows-latest
-            os: windows
-            arch: x86_64
+#          - label: windows-latest
+#            os: windows
+#            arch: x86_64
           - label: macos-13
             os: darwin
             arch: x86_64
