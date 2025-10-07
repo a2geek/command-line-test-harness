@@ -15,8 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.github.a2geek.clth;
+package io.github.a2geek.clth.app;
 
+import io.github.a2geek.clth.Config;
+import io.github.a2geek.clth.TestHarness;
+import io.github.a2geek.clth.TestSuite;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
 

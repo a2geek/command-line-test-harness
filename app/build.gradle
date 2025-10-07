@@ -1,0 +1,30 @@
+plugins {
+    id 'org.springframework.boot' version "3.5.6"
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "info.picocli:picocli:4.7.7"
+    implementation project(":lib")
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+bootJar {
+    archiveBaseName = 'clth'
+    manifest {
+        attributes 'Implementation-Title': "Command Line Test Harness 'clth'",
+                'Implementation-Version': project.version
+    }
+}
