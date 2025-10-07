@@ -61,9 +61,9 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
 
     public enum MatchType {
         exact(String::equals),
-        trim((a,b) -> a.trim().equals(b.trim())),
-        ignore((a,b) -> true),
-        contains(String::contains);
+        trim((expected,actual) -> expected.trim().equals(actual.trim())),
+        ignore((expected,actual) -> true),
+        contains((expected, actual) -> actual.contains(expected));
 
         private final BiFunction<String,String,Boolean> matchFn;
 

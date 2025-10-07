@@ -1,0 +1,23 @@
+commands:
+  clth:
+    main-class: io.github.a2geek.clth.app.Main
+    system-exit: yes
+    executable: app/build/native/nativeCompile/clth-*
+
+tests:
+  - name: no args
+    steps:
+      - command: clth
+        match: contains
+        stderr: Missing required parameter
+        rc: 2
+  - name: help flag
+    steps:
+      - command: clth --help
+        match: contains
+        stdout: "Usage: clth"
+  - name: version flag
+    steps:
+      - command: clth --version
+        match: contains
+        stdout: Command Line Test Harness
