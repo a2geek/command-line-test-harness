@@ -48,6 +48,7 @@ jobs:
         run: ./gradlew nativeCompile
 
       - name: "Test resulting 'clth' executable"
+        shell: bash
         run: app/build/native/nativeCompile/clth-* app-tests/src/test/resources/clth-config.yml
 
       - name: Upload binary
