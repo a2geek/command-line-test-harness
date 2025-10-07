@@ -26,13 +26,6 @@ test {
     useJUnitPlatform()
 }
 
-jar {
-    manifest {
-        attributes 'Implementation-Title': "Command Line Test Harness 'clth'",
-                'Implementation-Version': project.version
-    }
-}
-
 javadoc {
     title = "Command Line Test Harness ${project.version}"
     source = sourceSets.main.allJava

@@ -1,7 +1,8 @@
 plugins {
-    id 'org.springframework.boot' version "3.5.6"
+    id 'org.springframework.boot' version "2.7.7"
     id 'java'
     id 'application'
+    id 'org.graalvm.buildtools.native' version '0.10.6'
 }
 
 repositories {
@@ -10,6 +11,7 @@ repositories {
 
 dependencies {
     implementation "info.picocli:picocli:4.7.7"
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.7'
     implementation project(":lib")
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
@@ -17,14 +19,39 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+compileJava {
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+
 test {
     useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': "Command Line Test Harness 'clth'",
+                   'Implementation-Version': parent.version
+    }
+}
+
+application {
+    mainClass = 'io.github.a2geek.clth.app.Main'
 }
 
 bootJar {
     archiveBaseName = 'clth'
     manifest {
         attributes 'Implementation-Title': "Command Line Test Harness 'clth'",
-                'Implementation-Version': project.version
+                   'Implementation-Version': parent.version
+    }
+}
+
+graalvmNative {
+    String osName = System.getProperty('os.name').toLowerCase().split()[0]
+    String osArch = System.getProperty('os.arch').toLowerCase().split()[0]
+    binaries {
+        named("main") {
+            imageName.set("clth-${osName}-${osArch}-${parent.version}")
+        }
     }
 }
