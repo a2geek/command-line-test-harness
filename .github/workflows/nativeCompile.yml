@@ -48,13 +48,13 @@ jobs:
         run: ./gradlew nativeCompile
 
       - name: "Test resulting 'clth' executable (NOT Windows)"
-        if: ${{ os != 'windows' }}
+        if: ${{ matrix.os != 'windows' }}
         shell: bash
         run: |
           exe=$(find app/build/native/nativeCompile/ -type f)
           $exe app-tests/src/test/resources/clth-config.yml
       - name: "Test resulting 'clth' executable (Windows)"
-        if: ${{ os == 'windows' }}
+        if: ${{ matrix.os == 'windows' }}
         shell: bash
         run: |
           exe=$(find app/build/native/nativeCompile/ -type f)
