@@ -27,7 +27,7 @@ test {
 }
 
 javadoc {
-    title = "Command Line Test Harness ${project.version}"
+    title = "Command Line Test Harness ${parent.version}"
     source = sourceSets.main.allJava
     options.addStringOption('Xdoclint:none', '-quiet')
 }
@@ -47,6 +47,7 @@ publishing {
         mavenJava(MavenPublication) {
             groupId = 'io.github.a2geek'
             artifactId = "clth"
+            version = parent.version
 
             from components.java
 
