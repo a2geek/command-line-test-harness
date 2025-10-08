@@ -32,6 +32,10 @@ public class ConfigTest {
         assertTrue(Config.MatchType.trim.matches("right", "right  "));
         assertTrue(Config.MatchType.trim.matches("right", "  right"));
         assertFalse(Config.MatchType.trim.matches("right", "wrong"));
+        // Trim (multi-line)
+        final var actual = " TEXT LINE 1     \nTEXT LINE 2    \nEND  ";
+        final var expected = "TEXT LINE 1\nTEXT LINE 2\nEND";
+        assertTrue(Config.MatchType.trim.matches(expected, actual));
         // Contains
         assertTrue(Config.MatchType.contains.matches("right", "This is the right answer"));
         assertFalse(Config.MatchType.contains.matches("right", "This is the wrong answer"));
