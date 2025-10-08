@@ -24,6 +24,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import java.io.*;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -82,8 +83,8 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
                 case text -> content.getBytes();
                 case binary -> {
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    for (String value : content.split(" ")) {
-                        outputStream.write(Byte.parseByte(value, 16));
+                    for (String value : content.split("\\s+")) {
+                        outputStream.write((byte)HexFormat.fromHexDigits(value));
                     }
                     yield outputStream.toByteArray();
                 }
