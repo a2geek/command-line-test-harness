@@ -17,6 +17,10 @@
  */
 package io.github.a2geek.clth;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,4 +62,60 @@ public record TestSuite(Map<String, Config.Command> commands,
         }
         return builder.build();
     }
+
+    public String evaluateAsArgument(String varname, Map<String,File> testCaseFiles) {
+        if (varname.startsWith("$")) {
+            varname = varname.substring(1);
+            // Simple variable
+            if (variables().containsKey(varname)) {
+                varname = variables().get(varname);
+                if (!varname.startsWith("$")) {
+                    return varname;
+                }
+                varname = varname.substring(1);
+            }
+            // Generated file (which can also be specified as the variable value)
+            // Note that we reuse the same file for the test suite
+            if (files().containsKey(varname)) {
+                File file = testCaseFiles.computeIfAbsent(varname, name -> {
+                    Config.TestFile testFile = files().get(name);
+                    return testFile.asFile();
+                });
+                return file.getPath();
+            }
+            // Confusion!
+            String msg = String.format("Found variable named '%s' but no value", varname);
+            throw new RuntimeException(msg);
+        } else {
+            return varname;
+        }
+    }
+
+    public byte[] evaluateAsBytes(String varname) throws IOException {
+        if (varname.startsWith("$")) {
+            varname = varname.substring(1);
+            // Simple variable
+            if (variables().containsKey(varname)) {
+                varname = variables().get(varname);
+                if (!varname.startsWith("$")) {
+                    return varname.getBytes();
+                }
+                varname = varname.substring(1);
+            }
+            // Generated file (which can also be specified as the variable value)
+            // Note that we reuse the same file for the test suite
+            if (files.containsKey(varname)) {
+                Config.TestFile testFile = files.get(varname);
+                return testFile.contentAsBytes();
+            }
+            // Confusion!
+            String msg = String.format("Found variable named '%s' but no value", varname);
+            throw new RuntimeException(msg);
+        } else if (varname.startsWith("file:")) {
+            return Files.readAllBytes(Path.of(varname.substring(5)));
+        } else {
+            return varname.getBytes();
+        }
+    }
+
 }
