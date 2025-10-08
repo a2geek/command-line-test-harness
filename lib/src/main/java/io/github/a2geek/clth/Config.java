@@ -28,6 +28,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 
@@ -62,7 +63,7 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
 
     public enum MatchType {
         exact(String::equals),
-        trim((expected,actual) -> expected.trim().equals(actual.trim())),
+        trim((expected,actual) -> multilineTrim(expected).equals(multilineTrim(actual))),
         ignore((expected,actual) -> true),
         contains((expected, actual) -> actual.contains(expected));
 
@@ -74,6 +75,9 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
 
         public boolean matches(String expected, String actual) {
             return matchFn.apply(expected, actual);
+        }
+        public static String multilineTrim(String value) {
+            return value.lines().map(String::trim).collect(Collectors.joining("\n"));
         }
     }
 
