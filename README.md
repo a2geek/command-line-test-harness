@@ -72,6 +72,33 @@ java.lang.RuntimeException: Errors encountered: [STDOUT does not match]
 	at java.base@21.0.7/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
 ```
 
+## Gradle and Maven GAV
+
+The libraries are published to Maven central and can be incorporated into your Java projects for unit testing.
+
+<details>
+
+<summary>Maven</summary>
+
+```xml
+<dependency>
+    <groupId>io.github.a2geek</groupId>
+    <artifactId>clth</artifactId>
+    <version>2.0</version>
+</dependency>
+```
+
+</details>
+<details>
+
+<summary>Gradle</summary>
+
+```groovy
+implementation("io.github.a2geek:clth:2.0")
+```
+
+</details>
+
 ## Using in a project
 
 > Important note: If you use `System.exit()` *and* are doing a native compile, the agent that "catches" the exit call 
