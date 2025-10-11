@@ -17,6 +17,9 @@
  */
 package io.github.a2geek.clth;
 
+import com.github.difflib.text.DiffRow;
+import com.github.difflib.text.DiffRowGenerator;
+
 import java.io.*;
 import java.util.*;
 import java.util.function.Consumer;
@@ -72,12 +75,12 @@ public class TestHarness {
                 byte[] expectedStdout = testSuite.evaluateAsBytes(step.stdout());
                 if (!step.match().matches(new String(expectedStdout), stdout.toString())) {
                     errors.add("STDOUT does not match");
-                    System.out.println(stdout);
+                    diff(new String(expectedStdout), stdout.toString());
                 }
                 byte[] expectedStderr = testSuite.evaluateAsBytes(step.stderr());
                 if (!step.match().matches(new String(expectedStderr), stderr.toString())) {
                     errors.add("STDERR does not match");
-                    System.out.println(stderr);
+                    diff(new String(expectedStderr), stderr.toString());
                 }
 
                 if (!errors.isEmpty()) {
@@ -86,6 +89,36 @@ public class TestHarness {
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
+        }
+    }
+
+    public static void diff(String expected, String actual) {
+        final Map<DiffRow.Tag,String> tags = Map.of(
+                DiffRow.Tag.EQUAL, "=",
+                DiffRow.Tag.CHANGE, "!",
+                DiffRow.Tag.DELETE, "-",
+                DiffRow.Tag.INSERT, "+"
+            );
+        DiffRowGenerator generator = DiffRowGenerator.create()
+                .oldTag(f -> ">")
+                .newTag(f -> "<")
+                .build();
+        List<DiffRow> rows = generator.generateDiffRows(expected.lines().toList(), actual.lines().toList());
+        int oldSize = rows.stream().mapToInt(r -> r.getOldLine().length()).max().orElse(0);
+        int newSize = rows.stream().mapToInt(r -> r.getNewLine().length()).max().orElse(0);
+        // Note we assume only one of these might be 0
+        if (oldSize == 0) {
+            final String fmt = String.format("\t\t%%s |          | %%-%1$d.%1$ds |\n", newSize);
+            rows.forEach(diff -> System.out.printf(fmt, tags.get(diff.getTag()), diff.getNewLine()));
+        }
+        else if (newSize == 0) {
+            final String fmt = String.format("\t\t%%s | %%-%1$d.%1$ds |          |\n", oldSize);
+            rows.forEach(diff -> System.out.printf(fmt, tags.get(diff.getTag()), diff.getOldLine()));
+        }
+        else {
+            final String fmt = String.format("\t\t%%s | %%-%1$d.%1$ds | %%-%2$d.%2$ds |\n", oldSize, newSize);
+            rows.forEach(diff ->
+                    System.out.printf(fmt, tags.get(diff.getTag()), diff.getOldLine(), diff.getNewLine()));
         }
     }
 
