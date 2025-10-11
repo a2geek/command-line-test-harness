@@ -242,11 +242,12 @@ data that is used subsequently. (For instance, it creates some content and then 
 * `stderr` - the expected error output. The default is no output.
 * `match` - the match criteria to apply. Default is `exact`.
 
-  | Option     | Description                                                                                                      |
-  |------------|------------------------------------------------------------------------------------------------------------------|
-  | `exact`    | Strings must match exactly, including whitespace.                                                                |
-  | `trim`     | Whitespace at beginning of _string_ and ending of _string_ is trimmed, and resulting strings must match exactly. |
-  | `ignore`   | Ignore this match. Assume `true`.                                                                                |
-  | `contains` | True if the string is found within the output.                                                                   |
-  | `regex`    | Must match the regex. Note that regex is put into "dotall" mode, meaning `.` matches line terminators as well.   |
+  | Option       | Description                                                                                                      |
+  |--------------|------------------------------------------------------------------------------------------------------------------|
+  | `contains`   | True if the string is found within the output.                                                                   |
+  | `exact`      | Strings must match exactly, including whitespace.                                                                |
+  | `ignore`     | Ignore this match. Assume `true`.                                                                                |
+  | `regex`      | Must match the regex. Note that regex is put into "dotall" mode, meaning `.` matches line terminators as well.   |
+  | `trim`       | Whitespace at beginning of _string_ and ending of _string_ is trimmed, and resulting strings must match exactly. |
+  | `whitespace` | Ignore all whitespace for comparison. Also performs an implied trim to remove extra whitespace from ends.        |
 

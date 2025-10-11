@@ -67,7 +67,8 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
         trim((expected,actual) -> multilineTrim(expected).equals(multilineTrim(actual))),
         ignore((expected,actual) -> true),
         contains((expected, actual) -> actual.contains(expected)),
-        regex((regex,actual) -> Pattern.compile(regex, Pattern.DOTALL).matcher(actual).matches());
+        regex((regex,actual) -> Pattern.compile(regex, Pattern.DOTALL).matcher(actual).matches()),
+        whitespace((expected, actual) -> whitespaceTrim(expected).equals(whitespaceTrim(actual)));
 
         private final BiFunction<String,String,Boolean> matchFn;
 
@@ -80,6 +81,9 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
         }
         public static String multilineTrim(String value) {
             return value.lines().map(String::trim).collect(Collectors.joining("\n"));
+        }
+        public static String whitespaceTrim(String value) {
+            return value.replaceAll("\\s+", " ").trim();
         }
     }
 

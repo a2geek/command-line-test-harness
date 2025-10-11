@@ -56,13 +56,29 @@ public class ConfigTest {
         assertFalse(Config.MatchType.regex.matches(".*Apple.*", "A Banana a day"));
         // Multiline
         final var regex = ".*Apple.*";
-        final var expected = """
+        final var actual = """
                 An
                 Apple
                 A
                 Day
                 """;
-        assertTrue(Config.MatchType.regex.matches(regex, expected));
+        assertTrue(Config.MatchType.regex.matches(regex, actual));
+    }
+
+    @Test
+    public void testMatch_whitespace() {
+        // Test independent function
+        assertEquals("An Apple A Day", Config.MatchType.whitespaceTrim("\tAn  Apple    A Day"));
+        //
+        assertTrue(Config.MatchType.whitespace.matches("An Apple\tA Day", "\tAn  Apple    A Day"));
+        assertFalse(Config.MatchType.whitespace.matches("An Apple\tA Day", "\tA  Banana    A Day"));
+        // Multiline
+        final var expected = "An Apple A Day";
+        final var actual = """
+                \tAn\t\t\tApple
+                A                 Day
+                """;
+        assertTrue(Config.MatchType.whitespace.matches(expected, actual));
     }
 
     @Test
