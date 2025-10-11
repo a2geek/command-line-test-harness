@@ -22,12 +22,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfigTest {
     @Test
-    public void testMatchType() {
-        // Ignore
+    public void testMatch_ignore() {
         assertTrue(Config.MatchType.ignore.matches("right", "wrong"));
-        // Exact
+    }
+
+    @Test
+    public void testMatch_exact() {
         assertTrue(Config.MatchType.exact.matches("right", "right"));
         assertFalse(Config.MatchType.exact.matches("right", "wrong"));
+    }
+
+    @Test
+    public void testMatch_trim() {
         // Trim
         assertTrue(Config.MatchType.trim.matches("right", "right  "));
         assertTrue(Config.MatchType.trim.matches("right", "  right"));
@@ -36,9 +42,27 @@ public class ConfigTest {
         final var actual = " TEXT LINE 1     \nTEXT LINE 2    \nEND  ";
         final var expected = "TEXT LINE 1\nTEXT LINE 2\nEND";
         assertTrue(Config.MatchType.trim.matches(expected, actual));
-        // Contains
+    }
+
+    @Test
+    public void testMatch_contains() {
         assertTrue(Config.MatchType.contains.matches("right", "This is the right answer"));
         assertFalse(Config.MatchType.contains.matches("right", "This is the wrong answer"));
+    }
+
+    @Test
+    public void testMatch_regex() {
+        assertTrue(Config.MatchType.regex.matches(".*Apple.*", "An Apple a day"));
+        assertFalse(Config.MatchType.regex.matches(".*Apple.*", "A Banana a day"));
+        // Multiline
+        final var regex = ".*Apple.*";
+        final var expected = """
+                An
+                Apple
+                A
+                Day
+                """;
+        assertTrue(Config.MatchType.regex.matches(regex, expected));
     }
 
     @Test

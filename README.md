@@ -240,4 +240,13 @@ data that is used subsequently. (For instance, it creates some content and then 
   a file value, or is simply text to be used. The default is no input.
 * `stdout` - the expected text output. The default is no output.
 * `stderr` - the expected error output. The default is no output.
-* `match` - the match criteria to apply. Default is `exact`. Options are `exact`, `trim`, `ignore`, `contains`.
+* `match` - the match criteria to apply. Default is `exact`.
+
+  | Option     | Description                                                                                                      |
+  |------------|------------------------------------------------------------------------------------------------------------------|
+  | `exact`    | Strings must match exactly, including whitespace.                                                                |
+  | `trim`     | Whitespace at beginning of _string_ and ending of _string_ is trimmed, and resulting strings must match exactly. |
+  | `ignore`   | Ignore this match. Assume `true`.                                                                                |
+  | `contains` | True if the string is found within the output.                                                                   |
+  | `regex`    | Must match the regex. Note that regex is put into "dotall" mode, meaning `.` matches line terminators as well.   |
+

@@ -28,6 +28,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
@@ -65,7 +66,8 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
         exact(String::equals),
         trim((expected,actual) -> multilineTrim(expected).equals(multilineTrim(actual))),
         ignore((expected,actual) -> true),
-        contains((expected, actual) -> actual.contains(expected));
+        contains((expected, actual) -> actual.contains(expected)),
+        regex((regex,actual) -> Pattern.compile(regex, Pattern.DOTALL).matcher(actual).matches());
 
         private final BiFunction<String,String,Boolean> matchFn;
 
