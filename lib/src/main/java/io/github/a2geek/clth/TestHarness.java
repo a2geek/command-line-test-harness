@@ -71,25 +71,13 @@ public class TestHarness {
                     errors.add(String.format("Expecting exit code of %d but got %d", step.returnCode(), rc));
                 }
 
-                // Check output
+                // Check stdout
                 byte[] expectedStdout = testSuite.evaluateAsBytes(step.stdout());
-                if (!step.match().matches(new String(expectedStdout), stdout.toString())) {
-                    errors.add("STDOUT does not match");
-                    String diffOut = diff(new String(expectedStdout), stdout.toString());
-                    settings.out.println(diffOut.indent(10));
-                }
-                else if (settings.alwaysShowOutput && !stdout.toString().isBlank()) {
-                    settings.out.println(stdout.toString().indent(10));
-                }
+                handleOutput("stdout", step, settings, new String(expectedStdout), stdout.toString(), errors);
+
+                // Check stderr
                 byte[] expectedStderr = testSuite.evaluateAsBytes(step.stderr());
-                if (!step.match().matches(new String(expectedStderr), stderr.toString())) {
-                    errors.add("STDERR does not match");
-                    String diffOut = diff(new String(expectedStderr), stderr.toString());
-                    settings.out.println(diffOut.indent(10));
-                }
-                else if (settings.alwaysShowOutput && !stderr.toString().isBlank()) {
-                    settings.out.println(stderr.toString().indent(10));
-                }
+                handleOutput("stderr", step, settings, new String(expectedStderr), stderr.toString(), errors);
 
                 if (!errors.isEmpty()) {
                     throw new RuntimeException("Errors encountered: " + errors);
@@ -97,6 +85,22 @@ public class TestHarness {
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
+        }
+    }
+    public static void handleOutput(String name, Config.Step step, Settings settings,
+                                    String expected, String actual, List<String> errors) {
+        Config.Whitespace whitespace = step.criteria().whitespace();
+        expected = whitespace.apply(expected);
+        actual = whitespace.apply(actual);
+
+        Config.MatchType matchType = step.criteria().match();
+        if (!matchType.matches(expected, actual)) {
+            errors.add(String.format("'%s' does not match", name));
+            String diffOut = diff(expected, actual);
+            settings.out.println(diffOut.indent(10));
+        }
+        else if (settings.alwaysShowOutput && !actual.isBlank()) {
+            settings.out.println(actual.indent(10));
         }
     }
 

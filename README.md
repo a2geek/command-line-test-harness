@@ -238,16 +238,25 @@ data that is used subsequently. (For instance, it creates some content and then 
 * `command` - a reference to the `cli` tool and all applicable arguments. Files and variables are referenced with a `$` prefix.
 * `stdin` - sets the stdin for the process; a `file:` prefix searches for that file, a `$` reference uses a variable value or
   a file value, or is simply text to be used. The default is no input.
+* `criteria` - the test criteria to apply to stderr and stdout.
 * `stdout` - the expected text output. The default is no output.
 * `stderr` - the expected error output. The default is no output.
+ 
+The criteria structure is as follows: 
 * `match` - the match criteria to apply. Default is `exact`.
 
-  | Option       | Description                                                                                                      |
-  |--------------|------------------------------------------------------------------------------------------------------------------|
-  | `contains`   | True if the string is found within the output.                                                                   |
-  | `exact`      | Strings must match exactly, including whitespace.                                                                |
-  | `ignore`     | Ignore this match. Assume `true`.                                                                                |
-  | `regex`      | Must match the regex. Note that regex is put into "dotall" mode, meaning `.` matches line terminators as well.   |
-  | `trim`       | Whitespace at beginning of _string_ and ending of _string_ is trimmed, and resulting strings must match exactly. |
-  | `whitespace` | Ignore all whitespace for comparison. Also performs an implied trim to remove extra whitespace from ends.        |
+  | Option       | Description                                                                                                    |
+  |--------------|----------------------------------------------------------------------------------------------------------------|
+  | `contains`   | True if the string is found within the output.                                                                 |
+  | `exact`      | Strings must match exactly, including whitespace. (Default)                                                    |
+  | `ignore`     | Ignore this match. Assume `true`.                                                                              |
+  | `regex`      | Must match the regex. Note that regex is put into "dotall" mode, meaning `.` matches line terminators as well. |
 
+* `whitespace` - indicates how to handle whitespace. Note that the whitespace condition is applied to expected and actual 
+  values _before_ the match criteria. Default is `exact`.
+
+  | Option   | Description                                                                                               |
+  |----------|-----------------------------------------------------------------------------------------------------------|
+  | `exact`  | Match all whitespace exactly. (Default)                                                                   |
+  | `trim`   | Whitespace at beginning and ending of _each line_ is trimmed, and resulting strings must match exactly.   |
+  | `ignore` | Ignore all whitespace for comparison. Also performs an implied trim to remove extra whitespace from ends. |

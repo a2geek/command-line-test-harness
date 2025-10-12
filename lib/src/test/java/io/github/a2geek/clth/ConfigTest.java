@@ -33,18 +33,6 @@ public class ConfigTest {
     }
 
     @Test
-    public void testMatch_trim() {
-        // Trim
-        assertTrue(Config.MatchType.trim.matches("right", "right  "));
-        assertTrue(Config.MatchType.trim.matches("right", "  right"));
-        assertFalse(Config.MatchType.trim.matches("right", "wrong"));
-        // Trim (multi-line)
-        final var actual = " TEXT LINE 1     \nTEXT LINE 2    \nEND  ";
-        final var expected = "TEXT LINE 1\nTEXT LINE 2\nEND";
-        assertTrue(Config.MatchType.trim.matches(expected, actual));
-    }
-
-    @Test
     public void testMatch_contains() {
         assertTrue(Config.MatchType.contains.matches("right", "This is the right answer"));
         assertFalse(Config.MatchType.contains.matches("right", "This is the wrong answer"));
@@ -66,19 +54,31 @@ public class ConfigTest {
     }
 
     @Test
-    public void testMatch_whitespace() {
-        // Test independent function
-        assertEquals("An Apple A Day", Config.MatchType.whitespaceTrim("\tAn  Apple    A Day"));
-        //
-        assertTrue(Config.MatchType.whitespace.matches("An Apple\tA Day", "\tAn  Apple    A Day"));
-        assertFalse(Config.MatchType.whitespace.matches("An Apple\tA Day", "\tA  Banana    A Day"));
-        // Multiline
+    public void testWhitespace_trim() {
+        final Config.Whitespace whitespace = Config.Whitespace.trim;
+        // Trim
+        assertEquals("right", whitespace.apply("right  "));
+        assertEquals("right", whitespace.apply("  right"));
+        // Trim (multi-line)
+        final var actual = " TEXT LINE 1     \nTEXT LINE 2    \nEND  ";
+        final var expected = "TEXT LINE 1\nTEXT LINE 2\nEND";
+        assertEquals(expected, whitespace.apply(actual));
+    }
+
+
+    @Test
+    public void testWhitespace_ignore() {
+        final Config.Whitespace whitespace = Config.Whitespace.ignore;
         final var expected = "An Apple A Day";
+        // Ignore
+        assertEquals(expected, whitespace.apply("\tAn  Apple    A Day"));
+        assertEquals(expected, whitespace.apply("An Apple\tA Day"));
+        // Ignore (multi-line)
         final var actual = """
                 \tAn\t\t\tApple
                 A                 Day
                 """;
-        assertTrue(Config.MatchType.whitespace.matches(expected, actual));
+        assertEquals("An Apple\nA Day", whitespace.apply(actual));
     }
 
     @Test
