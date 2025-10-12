@@ -28,7 +28,7 @@ public class ExecuteTests {
     @ParameterizedTest(name = "{1}: {2}")
     @MethodSource("testCasesForSamples")
     public void testSamples(TestSuite testSuite, String name, String parameters) {
-        TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.FilePreservation.DELETE);
+        TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.settings().deleteFiles().get());
     }
 
     public static Stream<Arguments> testCasesForSamples() {
@@ -47,7 +47,11 @@ public class ExecuteTests {
     @ParameterizedTest(name = "{1}: {2}")
     @MethodSource("testCasesForCLTH")
     public void testCLTH(TestSuite testSuite, String name, String parameters) {
-        TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.FilePreservation.DELETE);
+        TestHarness.Settings settings = TestHarness.settings()
+                .deleteFiles()
+                .enableAlwaysShowOutput()
+                .get();
+        TestHarness.run(testSuite, JUnitHelper::execute, settings);
     }
 
     public static Stream<Arguments> testCasesForCLTH() {

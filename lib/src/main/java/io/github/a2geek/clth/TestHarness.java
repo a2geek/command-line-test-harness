@@ -25,9 +25,9 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class TestHarness {
-    public static void run(TestSuite testSuite, TestRunner runner, FilePreservation filePreservation) {
+    public static void run(TestSuite testSuite, TestRunner runner, Settings settings) {
         Map<String,File> testCaseFiles = new HashMap<>();
-        System.out.printf("Test '%s' %s\n", testSuite.testName(), testSuite.variables());
+        settings.out.printf("Test '%s' %s\n", testSuite.testName(), testSuite.variables());
         for (int n=0; n<testSuite.steps().size(); n++) {
             Config.Step step = testSuite.steps().get(n);
             try {
@@ -45,13 +45,13 @@ public class TestHarness {
                     parameters.add(testSuite.evaluateAsArgument(parts[i], testCaseFiles));
                 }
                 // Apply the file preservation logic
-                testCaseFiles.values().forEach(filePreservation::apply);
+                testCaseFiles.values().forEach(settings.filePreservation()::apply);
                 // Trim out any blank parameters at end
                 while (!parameters.isEmpty() && parameters.getLast().isBlank()) {
                     parameters.removeLast();
                 }
 
-                System.out.printf("\t%d: %s %s\n", n+1, parts[0], String.join(" ", parameters));
+                settings.out.printf("\t%d: %s %s\n", n+1, parts[0], String.join(" ", parameters));
 
                 // Setup stdin
                 InputStream stdin = InputStream.nullInputStream();
@@ -75,12 +75,20 @@ public class TestHarness {
                 byte[] expectedStdout = testSuite.evaluateAsBytes(step.stdout());
                 if (!step.match().matches(new String(expectedStdout), stdout.toString())) {
                     errors.add("STDOUT does not match");
-                    diff(new String(expectedStdout), stdout.toString());
+                    String diffOut = diff(new String(expectedStdout), stdout.toString());
+                    settings.out.println(diffOut.indent(10));
+                }
+                else if (settings.alwaysShowOutput && !stdout.toString().isBlank()) {
+                    settings.out.println(stdout.toString().indent(10));
                 }
                 byte[] expectedStderr = testSuite.evaluateAsBytes(step.stderr());
                 if (!step.match().matches(new String(expectedStderr), stderr.toString())) {
                     errors.add("STDERR does not match");
-                    diff(new String(expectedStderr), stderr.toString());
+                    String diffOut = diff(new String(expectedStderr), stderr.toString());
+                    settings.out.println(diffOut.indent(10));
+                }
+                else if (settings.alwaysShowOutput && !stderr.toString().isBlank()) {
+                    settings.out.println(stderr.toString().indent(10));
                 }
 
                 if (!errors.isEmpty()) {
@@ -92,34 +100,64 @@ public class TestHarness {
         }
     }
 
-    public static void diff(String expected, String actual) {
+    public static Settings.Builder settings() {
+        return new Settings.Builder();
+    }
+    public record Settings(FilePreservation filePreservation, PrintStream out, boolean alwaysShowOutput) {
+        public static class Builder {
+            private FilePreservation filePreservation = FilePreservation.DELETE;
+            private PrintStream out = System.out;
+            private boolean alwaysShowOutput = false;
+            public Builder deleteFiles() {
+                this.filePreservation = FilePreservation.DELETE;
+                return this;
+            }
+            public Builder keepFiles() {
+                this.filePreservation = FilePreservation.KEEP;
+                return this;
+            }
+            public Builder out(PrintStream out) {
+                assert out != null;
+                this.out = out;
+                return this;
+            }
+            public Builder enableAlwaysShowOutput() {
+                this.alwaysShowOutput = true;
+                return this;
+            }
+            public Settings get() {
+                return new Settings(filePreservation, out, alwaysShowOutput);
+            }
+        }
+    }
+
+    public static String diff(String expected, String actual) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
         final Map<DiffRow.Tag,String> tags = Map.of(
                 DiffRow.Tag.EQUAL, "=",
                 DiffRow.Tag.CHANGE, "!",
                 DiffRow.Tag.DELETE, "-",
                 DiffRow.Tag.INSERT, "+"
             );
-        DiffRowGenerator generator = DiffRowGenerator.create()
-                .oldTag(f -> ">")
-                .newTag(f -> "<")
-                .build();
+        DiffRowGenerator generator = DiffRowGenerator.create().build();
         List<DiffRow> rows = generator.generateDiffRows(expected.lines().toList(), actual.lines().toList());
         int oldSize = rows.stream().mapToInt(r -> r.getOldLine().length()).max().orElse(0);
         int newSize = rows.stream().mapToInt(r -> r.getNewLine().length()).max().orElse(0);
         // Note we assume only one of these might be 0
         if (oldSize == 0) {
-            final String fmt = String.format("\t\t%%s |          | %%-%1$d.%1$ds |\n", newSize);
-            rows.forEach(diff -> System.out.printf(fmt, tags.get(diff.getTag()), diff.getNewLine()));
+            final String fmt = String.format("%%s |          | %%-%1$d.%1$ds |\n", newSize);
+            rows.forEach(diff -> pw.printf(fmt, tags.get(diff.getTag()), diff.getNewLine()));
         }
         else if (newSize == 0) {
-            final String fmt = String.format("\t\t%%s | %%-%1$d.%1$ds |          |\n", oldSize);
-            rows.forEach(diff -> System.out.printf(fmt, tags.get(diff.getTag()), diff.getOldLine()));
+            final String fmt = String.format("%%s | %%-%1$d.%1$ds |          |\n", oldSize);
+            rows.forEach(diff -> pw.printf(fmt, tags.get(diff.getTag()), diff.getOldLine()));
         }
         else {
-            final String fmt = String.format("\t\t%%s | %%-%1$d.%1$ds | %%-%2$d.%2$ds |\n", oldSize, newSize);
-            rows.forEach(diff ->
-                    System.out.printf(fmt, tags.get(diff.getTag()), diff.getOldLine(), diff.getNewLine()));
+            final String fmt = String.format("%%s | %%-%1$d.%1$ds | %%-%2$d.%2$ds |\n", oldSize, newSize);
+            rows.forEach(diff -> pw.printf(fmt, tags.get(diff.getTag()), diff.getOldLine(), diff.getNewLine()));
         }
+        return sw.toString();
     }
 
     public enum FilePreservation {
