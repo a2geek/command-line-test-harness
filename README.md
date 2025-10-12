@@ -19,13 +19,16 @@ Graal native image has been produced.
 
 ```shell
 $ clth --help
-Usage: clth [-hV] [--delete-files] [--keep-files] <testFiles>...
+Usage: clth [-ahV] [--keep-files | --delete-files] <testFiles>...
 Command Line Test Harness
       <testFiles>...   Test file definitions
-      --delete-files   Delete all temporary test files (default)
+  -a, --all-output     Always show output from tests.
   -h, --help           Show this help message and exit.
-      --keep-files     Keep all temporary test files for review
   -V, --version        Print version information and exit.
+
+File Management:
+      --delete-files   Delete all temporary test files (default)
+      --keep-files     Keep all temporary test files for review
 ```
 
 Sample successful run:
@@ -72,6 +75,33 @@ java.lang.RuntimeException: Errors encountered: [STDOUT does not match]
 	at java.base@21.0.7/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
 ```
 
+## Gradle and Maven GAV
+
+The libraries are published to Maven central and can be incorporated into your Java projects for unit testing.
+
+<details>
+
+<summary>Maven</summary>
+
+```xml
+<dependency>
+    <groupId>io.github.a2geek</groupId>
+    <artifactId>clth</artifactId>
+    <version>2.0</version>
+</dependency>
+```
+
+</details>
+<details>
+
+<summary>Gradle</summary>
+
+```groovy
+implementation("io.github.a2geek:clth:2.0")
+```
+
+</details>
+
 ## Using in a project
 
 > Important note: If you use `System.exit()` *and* are doing a native compile, the agent that "catches" the exit call 
@@ -90,7 +120,11 @@ A sample unit test:
 @ParameterizedTest(name = "{1}: {2}")
 @MethodSource("testCases")
 public void test(TestSuite testSuite, String name, String parameters) {
-    TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.FilePreservation.DELETE);
+    final TestHarness.Settings settings = TestHarness.settings()
+            .deleteFiles()
+            .enableAlwaysShowOutput()
+            .get();
+    TestHarness.run(testSuite, JUnitHelper::execute, settings);
 }
 
 public static Stream<Arguments> testCases() {
@@ -106,6 +140,14 @@ public static Stream<Arguments> testCases() {
     }
 }
 ```
+
+With the `TestHarness.Settings` record, the following components can be configured:
+* Set the `FilePreservation` to keep all files or delete all files;
+* Set an alternate `PrintStream` for output;
+* Enable `alwaysShowOutput` (default is only show output on errors);
+* Set the `baseDirectory` `Path`, which helps standardize how files are found (note that the IDE and command-line 
+  environments likely have differing opinions on what the current directory is).
+
 
 In addition, the Java agent needs to be added for unit tests -- *if you are using `System.exit()` in the application*.
 
@@ -191,10 +233,13 @@ tests:
       - command: <cli> command-with-flags $arg1 $arg2
       - command: <cli> command-no-flags
       - command: <cli> command-with-stdin
-        stdin: file:src/test/resources/testfile.txt
+        stdin: file:testfile.txt
       - command: <cli> command-with-stdin-alternate
         stdin: $filename
       - command: <cli> command-with-stdout
+        criteria:
+          match: exact
+          whitespace: trim
         stdout: |
           expected output here
 ```
@@ -211,6 +256,25 @@ data that is used subsequently. (For instance, it creates some content and then 
 * `command` - a reference to the `cli` tool and all applicable arguments. Files and variables are referenced with a `$` prefix.
 * `stdin` - sets the stdin for the process; a `file:` prefix searches for that file, a `$` reference uses a variable value or
   a file value, or is simply text to be used. The default is no input.
+* `criteria` - the test criteria to apply to stderr and stdout (see below).
 * `stdout` - the expected text output. The default is no output.
 * `stderr` - the expected error output. The default is no output.
-* `match` - the match criteria to apply. Default is `exact`. Options are `exact`, `trim`, `ignore`, `contains`.
+ 
+The criteria structure is as follows: 
+* `match` - the match criteria to apply. Default is `exact`.
+
+  | Option       | Description                                                                                                    |
+  |--------------|----------------------------------------------------------------------------------------------------------------|
+  | `contains`   | True if the string is found within the output.                                                                 |
+  | `exact`      | Strings must match exactly, including whitespace. (Default)                                                    |
+  | `ignore`     | Ignore this match. Assume `true`.                                                                              |
+  | `regex`      | Must match the regex. Note that regex is put into "dotall" mode, meaning `.` matches line terminators as well. |
+
+* `whitespace` - indicates how to handle whitespace. Note that the whitespace condition is applied to expected and actual 
+  values _before_ the match criteria. Default is `exact`.
+
+  | Option   | Description                                                                                               |
+  |----------|-----------------------------------------------------------------------------------------------------------|
+  | `exact`  | Match all whitespace exactly. (Default)                                                                   |
+  | `trim`   | Whitespace at beginning and ending of _each line_ is trimmed, and resulting strings must match exactly.   |
+  | `ignore` | Ignore all whitespace for comparison. Also performs an implied trim to remove extra whitespace from ends. |

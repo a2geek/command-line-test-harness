@@ -17,14 +17,18 @@
  */
 package io.github.a2geek.clth;
 
+import com.github.difflib.text.DiffRow;
+import com.github.difflib.text.DiffRowGenerator;
+
 import java.io.*;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
 
 public class TestHarness {
-    public static void run(TestSuite testSuite, TestRunner runner, FilePreservation filePreservation) {
+    public static void run(TestSuite testSuite, TestRunner runner, Settings settings) {
         Map<String,File> testCaseFiles = new HashMap<>();
-        System.out.printf("Test '%s' %s\n", testSuite.testName(), testSuite.variables());
+        settings.out.printf("Test '%s' %s\n", testSuite.testName(), testSuite.variables());
         for (int n=0; n<testSuite.steps().size(); n++) {
             Config.Step step = testSuite.steps().get(n);
             try {
@@ -42,18 +46,18 @@ public class TestHarness {
                     parameters.add(testSuite.evaluateAsArgument(parts[i], testCaseFiles));
                 }
                 // Apply the file preservation logic
-                testCaseFiles.values().forEach(filePreservation::apply);
+                testCaseFiles.values().forEach(settings.filePreservation()::apply);
                 // Trim out any blank parameters at end
                 while (!parameters.isEmpty() && parameters.getLast().isBlank()) {
                     parameters.removeLast();
                 }
 
-                System.out.printf("\t%d: %s %s\n", n+1, parts[0], String.join(" ", parameters));
+                settings.out.printf("\t%d: %s %s\n", n+1, parts[0], String.join(" ", parameters));
 
                 // Setup stdin
                 InputStream stdin = InputStream.nullInputStream();
                 if (step.stdin() != null) {
-                    stdin = new ByteArrayInputStream(testSuite.evaluateAsBytes(step.stdin()));
+                    stdin = new ByteArrayInputStream(testSuite.evaluateAsBytes(step.stdin(), settings));
                 }
 
                 // Setup stdout & stderr
@@ -68,17 +72,13 @@ public class TestHarness {
                     errors.add(String.format("Expecting exit code of %d but got %d", step.returnCode(), rc));
                 }
 
-                // Check output
-                byte[] expectedStdout = testSuite.evaluateAsBytes(step.stdout());
-                if (!step.match().matches(new String(expectedStdout), stdout.toString())) {
-                    errors.add("STDOUT does not match");
-                    System.out.println(stdout);
-                }
-                byte[] expectedStderr = testSuite.evaluateAsBytes(step.stderr());
-                if (!step.match().matches(new String(expectedStderr), stderr.toString())) {
-                    errors.add("STDERR does not match");
-                    System.out.println(stderr);
-                }
+                // Check stdout
+                byte[] expectedStdout = testSuite.evaluateAsBytes(step.stdout(), settings);
+                handleOutput("stdout", step, settings, new String(expectedStdout), stdout.toString(), errors);
+
+                // Check stderr
+                byte[] expectedStderr = testSuite.evaluateAsBytes(step.stderr(), settings);
+                handleOutput("stderr", step, settings, new String(expectedStderr), stderr.toString(), errors);
 
                 if (!errors.isEmpty()) {
                     throw new RuntimeException("Errors encountered: " + errors);
@@ -87,6 +87,87 @@ public class TestHarness {
                 throw new UncheckedIOException(e);
             }
         }
+    }
+    public static void handleOutput(String name, Config.Step step, Settings settings,
+                                    String expected, String actual, List<String> errors) {
+        Config.Whitespace whitespace = step.criteria().whitespace();
+        expected = whitespace.apply(expected);
+        actual = whitespace.apply(actual);
+
+        Config.MatchType matchType = step.criteria().match();
+        if (!matchType.matches(expected, actual)) {
+            errors.add(String.format("'%s' does not match", name));
+            String diffOut = diff(expected, actual);
+            settings.out.println(diffOut.indent(10));
+        }
+        else if (settings.alwaysShowOutput && !actual.isBlank()) {
+            settings.out.println(actual.indent(10));
+        }
+    }
+
+    public static Settings.Builder settings() {
+        return new Settings.Builder();
+    }
+    public record Settings(FilePreservation filePreservation, PrintStream out, boolean alwaysShowOutput, Path baseDirectory) {
+        public static class Builder {
+            private FilePreservation filePreservation = FilePreservation.DELETE;
+            private PrintStream out = System.out;
+            private boolean alwaysShowOutput = false;
+            private Path baseDirectory = Path.of(System.getProperty("user.dir"));   // default to working directory
+            public Builder deleteFiles() {
+                this.filePreservation = FilePreservation.DELETE;
+                return this;
+            }
+            public Builder keepFiles() {
+                this.filePreservation = FilePreservation.KEEP;
+                return this;
+            }
+            public Builder out(PrintStream out) {
+                assert out != null;
+                this.out = out;
+                return this;
+            }
+            public Builder enableAlwaysShowOutput() {
+                this.alwaysShowOutput = true;
+                return this;
+            }
+            public Builder baseDirectory(Path baseDirectory) {
+                this.baseDirectory = baseDirectory;
+                return this;
+            }
+            public Settings get() {
+                return new Settings(filePreservation, out, alwaysShowOutput, baseDirectory);
+            }
+        }
+    }
+
+    public static String diff(String expected, String actual) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        final Map<DiffRow.Tag,String> tags = Map.of(
+                DiffRow.Tag.EQUAL, "=",
+                DiffRow.Tag.CHANGE, "!",
+                DiffRow.Tag.DELETE, "-",
+                DiffRow.Tag.INSERT, "+"
+            );
+        DiffRowGenerator generator = DiffRowGenerator.create().build();
+        List<DiffRow> rows = generator.generateDiffRows(expected.lines().toList(), actual.lines().toList());
+        int oldSize = rows.stream().mapToInt(r -> r.getOldLine().length()).max().orElse(0);
+        int newSize = rows.stream().mapToInt(r -> r.getNewLine().length()).max().orElse(0);
+        // Note we assume only one of these might be 0
+        if (oldSize == 0) {
+            final String fmt = String.format("%%s |          | %%-%1$d.%1$ds |\n", newSize);
+            rows.forEach(diff -> pw.printf(fmt, tags.get(diff.getTag()), diff.getNewLine()));
+        }
+        else if (newSize == 0) {
+            final String fmt = String.format("%%s | %%-%1$d.%1$ds |          |\n", oldSize);
+            rows.forEach(diff -> pw.printf(fmt, tags.get(diff.getTag()), diff.getOldLine()));
+        }
+        else {
+            final String fmt = String.format("%%s | %%-%1$d.%1$ds | %%-%2$d.%2$ds |\n", oldSize, newSize);
+            rows.forEach(diff -> pw.printf(fmt, tags.get(diff.getTag()), diff.getOldLine(), diff.getNewLine()));
+        }
+        return sw.toString();
     }
 
     public enum FilePreservation {

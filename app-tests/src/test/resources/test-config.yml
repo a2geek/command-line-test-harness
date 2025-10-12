@@ -30,23 +30,35 @@ tests:
       - command: cat --help
         # Using "file" entry
         stdout: $expectedHelp
-        match: contains
+        criteria:
+          match: contains
+  - name: test from actual file
+    steps:
+      - command: cat --upper -
+        stdin: file:file.txt
+        criteria:
+          whitespace: trim
+        stdout: |
+          THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.
   - name: test no args
     steps:
       - command: cat
         rc: 1
         # Embedding expected output
+        criteria:
+          whitespace: trim
         stderr: |
           Usage: cat [ --lower | --upper ] FILE...
           Concatenate FILE(s) to standard output.
-        match: trim
   - name: empty echo
     steps:
       - command: echo
-        match: trim
+        criteria:
+          whitespace: trim
         stdout: ""
   - name: normal echo
     steps:
       - command: echo Hello World
-        match: exact
+        criteria:
+          match: exact
         stdout: "Hello World"

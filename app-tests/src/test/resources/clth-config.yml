@@ -8,16 +8,19 @@ tests:
   - name: no args
     steps:
       - command: clth
-        match: contains
+        criteria:
+          match: contains
         stderr: Missing required parameter
         rc: 2
   - name: help flag
     steps:
       - command: clth --help
-        match: contains
+        criteria:
+          match: contains
         stdout: "Usage: clth"
   - name: version flag
     steps:
       - command: clth --version
-        match: contains
+        criteria:
+          match: contains
         stdout: Command Line Test Harness

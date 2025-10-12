@@ -22,23 +22,63 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfigTest {
     @Test
-    public void testMatchType() {
-        // Ignore
+    public void testMatch_ignore() {
         assertTrue(Config.MatchType.ignore.matches("right", "wrong"));
-        // Exact
+    }
+
+    @Test
+    public void testMatch_exact() {
         assertTrue(Config.MatchType.exact.matches("right", "right"));
         assertFalse(Config.MatchType.exact.matches("right", "wrong"));
+    }
+
+    @Test
+    public void testMatch_contains() {
+        assertTrue(Config.MatchType.contains.matches("right", "This is the right answer"));
+        assertFalse(Config.MatchType.contains.matches("right", "This is the wrong answer"));
+    }
+
+    @Test
+    public void testMatch_regex() {
+        assertTrue(Config.MatchType.regex.matches(".*Apple.*", "An Apple a day"));
+        assertFalse(Config.MatchType.regex.matches(".*Apple.*", "A Banana a day"));
+        // Multiline
+        final var regex = ".*Apple.*";
+        final var actual = """
+                An
+                Apple
+                A
+                Day
+                """;
+        assertTrue(Config.MatchType.regex.matches(regex, actual));
+    }
+
+    @Test
+    public void testWhitespace_trim() {
+        final Config.Whitespace whitespace = Config.Whitespace.trim;
         // Trim
-        assertTrue(Config.MatchType.trim.matches("right", "right  "));
-        assertTrue(Config.MatchType.trim.matches("right", "  right"));
-        assertFalse(Config.MatchType.trim.matches("right", "wrong"));
+        assertEquals("right", whitespace.apply("right  "));
+        assertEquals("right", whitespace.apply("  right"));
         // Trim (multi-line)
         final var actual = " TEXT LINE 1     \nTEXT LINE 2    \nEND  ";
         final var expected = "TEXT LINE 1\nTEXT LINE 2\nEND";
-        assertTrue(Config.MatchType.trim.matches(expected, actual));
-        // Contains
-        assertTrue(Config.MatchType.contains.matches("right", "This is the right answer"));
-        assertFalse(Config.MatchType.contains.matches("right", "This is the wrong answer"));
+        assertEquals(expected, whitespace.apply(actual));
+    }
+
+
+    @Test
+    public void testWhitespace_ignore() {
+        final Config.Whitespace whitespace = Config.Whitespace.ignore;
+        final var expected = "An Apple A Day";
+        // Ignore
+        assertEquals(expected, whitespace.apply("\tAn  Apple    A Day"));
+        assertEquals(expected, whitespace.apply("An Apple\tA Day"));
+        // Ignore (multi-line)
+        final var actual = """
+                \tAn\t\t\tApple
+                A                 Day
+                """;
+        assertEquals("An Apple\nA Day", whitespace.apply(actual));
     }
 
     @Test
