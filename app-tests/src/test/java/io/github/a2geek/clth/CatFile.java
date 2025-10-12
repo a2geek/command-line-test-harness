@@ -44,6 +44,11 @@ public class CatFile {
                     System.out.println(usage);
                     System.exit(0);
                 }
+                case "-" -> {
+                    String content = new String(System.in.readAllBytes());
+                    System.out.print(mode.apply(content));
+                    System.exit(0);
+                }
                 default -> {
                     String content = Files.readString(Path.of(arg));
                     System.out.print(mode.apply(content));

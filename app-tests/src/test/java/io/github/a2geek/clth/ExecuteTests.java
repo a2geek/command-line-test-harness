@@ -22,13 +22,19 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 public class ExecuteTests {
     @ParameterizedTest(name = "{1}: {2}")
     @MethodSource("testCasesForSamples")
     public void testSamples(TestSuite testSuite, String name, String parameters) {
-        TestHarness.run(testSuite, JUnitHelper::execute, TestHarness.settings().deleteFiles().get());
+        TestHarness.Settings settings = TestHarness.settings()
+                .deleteFiles()
+                .enableAlwaysShowOutput()
+                .baseDirectory(Path.of("src/test/resources"))
+                .get();
+        TestHarness.run(testSuite, JUnitHelper::execute, settings);
     }
 
     public static Stream<Arguments> testCasesForSamples() {

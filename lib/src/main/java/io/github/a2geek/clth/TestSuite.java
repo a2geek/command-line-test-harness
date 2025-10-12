@@ -91,7 +91,7 @@ public record TestSuite(Map<String, Config.Command> commands,
         }
     }
 
-    public byte[] evaluateAsBytes(String varname) throws IOException {
+    public byte[] evaluateAsBytes(String varname, TestHarness.Settings settings) throws IOException {
         if (varname.startsWith("$")) {
             varname = varname.substring(1);
             // Simple variable
@@ -112,7 +112,10 @@ public record TestSuite(Map<String, Config.Command> commands,
             String msg = String.format("Found variable named '%s' but no value", varname);
             throw new RuntimeException(msg);
         } else if (varname.startsWith("file:")) {
-            return Files.readAllBytes(Path.of(varname.substring(5)));
+            // If Settings is configured properly, we *should* have consistent file locations:
+            final Path filePath = Path.of(varname.substring(5));
+            final Path combinedPath = settings.baseDirectory().resolve(filePath);
+            return Files.readAllBytes(combinedPath);
         } else {
             return varname.getBytes();
         }

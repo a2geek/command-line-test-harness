@@ -32,6 +32,14 @@ tests:
         stdout: $expectedHelp
         criteria:
           match: contains
+  - name: test from actual file
+    steps:
+      - command: cat --upper -
+        stdin: file:file.txt
+        criteria:
+          whitespace: trim
+        stdout: |
+          THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.
   - name: test no args
     steps:
       - command: cat

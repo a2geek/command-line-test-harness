@@ -21,6 +21,7 @@ import com.github.difflib.text.DiffRow;
 import com.github.difflib.text.DiffRowGenerator;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -56,7 +57,7 @@ public class TestHarness {
                 // Setup stdin
                 InputStream stdin = InputStream.nullInputStream();
                 if (step.stdin() != null) {
-                    stdin = new ByteArrayInputStream(testSuite.evaluateAsBytes(step.stdin()));
+                    stdin = new ByteArrayInputStream(testSuite.evaluateAsBytes(step.stdin(), settings));
                 }
 
                 // Setup stdout & stderr
@@ -72,11 +73,11 @@ public class TestHarness {
                 }
 
                 // Check stdout
-                byte[] expectedStdout = testSuite.evaluateAsBytes(step.stdout());
+                byte[] expectedStdout = testSuite.evaluateAsBytes(step.stdout(), settings);
                 handleOutput("stdout", step, settings, new String(expectedStdout), stdout.toString(), errors);
 
                 // Check stderr
-                byte[] expectedStderr = testSuite.evaluateAsBytes(step.stderr());
+                byte[] expectedStderr = testSuite.evaluateAsBytes(step.stderr(), settings);
                 handleOutput("stderr", step, settings, new String(expectedStderr), stderr.toString(), errors);
 
                 if (!errors.isEmpty()) {
@@ -107,11 +108,12 @@ public class TestHarness {
     public static Settings.Builder settings() {
         return new Settings.Builder();
     }
-    public record Settings(FilePreservation filePreservation, PrintStream out, boolean alwaysShowOutput) {
+    public record Settings(FilePreservation filePreservation, PrintStream out, boolean alwaysShowOutput, Path baseDirectory) {
         public static class Builder {
             private FilePreservation filePreservation = FilePreservation.DELETE;
             private PrintStream out = System.out;
             private boolean alwaysShowOutput = false;
+            private Path baseDirectory = Path.of(System.getProperty("user.dir"));   // default to working directory
             public Builder deleteFiles() {
                 this.filePreservation = FilePreservation.DELETE;
                 return this;
@@ -129,8 +131,12 @@ public class TestHarness {
                 this.alwaysShowOutput = true;
                 return this;
             }
+            public Builder baseDirectory(Path baseDirectory) {
+                this.baseDirectory = baseDirectory;
+                return this;
+            }
             public Settings get() {
-                return new Settings(filePreservation, out, alwaysShowOutput);
+                return new Settings(filePreservation, out, alwaysShowOutput, baseDirectory);
             }
         }
     }

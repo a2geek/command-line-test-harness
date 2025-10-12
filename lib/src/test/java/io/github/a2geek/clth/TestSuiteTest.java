@@ -60,8 +60,9 @@ public class TestSuiteTest {
 
     @Test
     public void testEvaluateAsBytes() throws IOException {
-        assertArrayEquals("anystring".getBytes(), testSuite.evaluateAsBytes("anystring"));
-        assertArrayEquals("avalue".getBytes(), testSuite.evaluateAsBytes("$avar"));
-        assertArrayEquals("HELLO WORLD".getBytes(), testSuite.evaluateAsBytes("$afile"));
+        final TestHarness.Settings settings = TestHarness.settings().get();
+        assertArrayEquals("anystring".getBytes(), testSuite.evaluateAsBytes("anystring", settings));
+        assertArrayEquals("avalue".getBytes(), testSuite.evaluateAsBytes("$avar", settings));
+        assertArrayEquals("HELLO WORLD".getBytes(), testSuite.evaluateAsBytes("$afile", settings));
     }
 }
