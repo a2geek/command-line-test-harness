@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
-@Command(name = "clth", mixinStandardHelpOptions = true, description = "Command Line Test Harness", versionProvider = Main.VersionProvider.class)
+@Command(name = "clth", mixinStandardHelpOptions = true, description = "Command Line Test Harness",
+        versionProvider = Main.VersionProvider.class)
 public class Main implements Callable<Integer> {
     public static void main(String... args) {
         int exitCode = new CommandLine(new Main()).execute(args);
@@ -42,14 +43,14 @@ public class Main implements Callable<Integer> {
     @Parameters(arity = "1..*", description = "Test file definitions")
     private List<Path> testFiles;
 
-    @Option(names = "--keep-files", description = "Keep all temporary test files for review")
-    public void selectKeepFiles(boolean flag) {
-        settingsBuilder.keepFiles();
+    @Option(names = { "-a", "--all-output" }, description = "Always show output from tests.")
+    public void showAllOutput(boolean f) {
+        settingsBuilder.enableAlwaysShowOutput();
     }
-    @Option(names = "--delete-files", description = "Delete all temporary test files (default)")
-    public void selectDeleteFiles(boolean flag) {
-        settingsBuilder.deleteFiles();
-    }
+
+    @ArgGroup(heading = "%nFile Management:%n")
+    private final FileManagement fileManagement = new FileManagement();
+
     private final TestHarness.Settings.Builder settingsBuilder = TestHarness.settings();
 
     @Override
@@ -99,6 +100,17 @@ public class Main implements Callable<Integer> {
             throw new UncheckedIOException(ex);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public class FileManagement {
+        @Option(names = "--keep-files", description = "Keep all temporary test files for review")
+        public void selectKeepFiles(boolean flag) {
+            settingsBuilder.keepFiles();
+        }
+        @Option(names = "--delete-files", description = "Delete all temporary test files (default)")
+        public void selectDeleteFiles(boolean flag) {
+            settingsBuilder.deleteFiles();
         }
     }
 
