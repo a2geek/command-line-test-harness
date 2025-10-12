@@ -52,7 +52,7 @@ jobs:
         shell: bash
         run: |
           exe=$(find app/build/native/nativeCompile/ -type f)
-          $exe app-tests/src/test/resources/clth-config.yml
+          $exe -a app-tests/src/test/resources/clth-config.yml
       - name: "Test resulting 'clth' executable (Windows)"
         if: ${{ matrix.os == 'windows' }}
         shell: bash
