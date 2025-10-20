@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version "2.7.7"
+    id 'org.springframework.boot' version "3.4.10"
     id 'java'
     id 'application'
     id 'org.graalvm.buildtools.native' version '0.11.1'
