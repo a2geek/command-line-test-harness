@@ -165,6 +165,36 @@ test {
 }
 ```
 
+> Important - Read This!
+
+Due to how `junit5-system-exit` operates, any Java code that executes `System.exit()` *should not* be in a try-catch block.
+The `System.exit()` invocation is rewritten as an exception throw.
+
+Don't do this:
+
+```java
+try {
+    // Program code...
+    System.exit(0);
+} catch (Throwable t) {
+    t.printStackTrace();
+    System.exit(1);
+}
+```
+
+... do this...
+
+```java
+int exitCode = 0;
+try {
+    // Program code...
+} catch (Throwable t) {
+    t.printStackTrace();
+    exitCode = 1;
+}
+System.exit(exitCode);
+```
+
 ## Config file
 
 The configuration file is done through a yaml file. Note that file paths must work both in the project and out of the 
