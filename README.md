@@ -88,6 +88,7 @@ The libraries are published to Maven central and can be incorporated into your J
     <groupId>io.github.a2geek</groupId>
     <artifactId>clth</artifactId>
     <version>2.0</version>
+    <scope>test</scope>
 </dependency>
 ```
 
@@ -97,7 +98,7 @@ The libraries are published to Maven central and can be incorporated into your J
 <summary>Gradle</summary>
 
 ```groovy
-implementation("io.github.a2geek:clth:2.0")
+testImplementation("io.github.a2geek:clth:2.0")
 ```
 
 </details>
@@ -162,6 +163,36 @@ test {
             .find { it.name.contains('junit5-system-exit') }
     jvmArgumentProviders.add({["-javaagent:$junit5SystemExit"]} as CommandLineArgumentProvider)
 }
+```
+
+> Important - Read This!
+
+Due to how `junit5-system-exit` operates, any Java code that executes `System.exit()` *should not* be in a try-catch block.
+The `System.exit()` invocation is rewritten as an exception throw.
+
+Don't do this:
+
+```java
+try {
+    // Program code...
+    System.exit(0);
+} catch (Throwable t) {
+    t.printStackTrace();
+    System.exit(1);
+}
+```
+
+... do this...
+
+```java
+int exitCode = 0;
+try {
+    // Program code...
+} catch (Throwable t) {
+    t.printStackTrace();
+    exitCode = 1;
+}
+System.exit(exitCode);
 ```
 
 ## Config file
