@@ -88,6 +88,7 @@ The libraries are published to Maven central and can be incorporated into your J
     <groupId>io.github.a2geek</groupId>
     <artifactId>clth</artifactId>
     <version>2.0</version>
+    <scope>test</scope>
 </dependency>
 ```
 
@@ -97,7 +98,7 @@ The libraries are published to Maven central and can be incorporated into your J
 <summary>Gradle</summary>
 
 ```groovy
-implementation("io.github.a2geek:clth:2.0")
+testImplementation("io.github.a2geek:clth:2.0")
 ```
 
 </details>
