@@ -195,6 +195,20 @@ try {
 System.exit(exitCode);
 ```
 
+## Github Actions (unrelated to CLTH but helpful regardless)
+
+Note that the Windows runners in Github are split across the `C:` and `D:` drive. This apparently can cause issues when the 
+temp directory is either not on the same drive or not explicitly assigned. At this time, this seems to resolve the Windows
+native image builds. (Also, see the local [native compile](.github/workflows/nativeCompile.yml) configuration.)
+
+```yaml
+- name: "Build 'clth'"
+  run: ./gradlew nativeCompile
+  env:
+    # Needed for Windows; not an issue for other OSes
+    GRADLE_OPTS: -Djava.io.tmpdir=${{ runner.temp }}
+```
+
 ## Config file
 
 The configuration file is done through a yaml file. Note that file paths must work both in the project and out of the 
