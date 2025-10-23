@@ -44,6 +44,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
 
+      - name: Show properties
+        run: java -XshowSettings:properties --version
+
       - name: "Build 'clth'"
         run: ./gradlew nativeCompile
         env:
