@@ -45,7 +45,11 @@ jobs:
           native-image-job-reports: 'true'
 
       - name: "Build 'clth'"
+        if: ${{ matrix.os != 'windows' }}
         run: ./gradlew nativeCompile
+      - name: "Build 'clth'"
+        if: ${{ matrix.os == 'windows' }}
+        run: ./gradlew -Djava.io.tmpdir=${{ runner.temp }} nativeCompile
 
       - name: "Test resulting 'clth' executable (NOT Windows)"
         if: ${{ matrix.os != 'windows' }}
