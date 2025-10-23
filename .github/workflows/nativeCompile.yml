@@ -49,7 +49,9 @@ jobs:
         run: ./gradlew nativeCompile
       - name: "Build 'clth'"
         if: ${{ matrix.os == 'windows' }}
-        run: ./gradlew -Djava.io.tmpdir=${{ runner.temp }} nativeCompile
+        run: ./gradlew nativeCompile
+        env:
+          GRADLE_OPTS: -Djava.io.tmpdir=${{ runner.temp }}
 
       - name: "Test resulting 'clth' executable (NOT Windows)"
         if: ${{ matrix.os != 'windows' }}
