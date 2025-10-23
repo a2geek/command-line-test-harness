@@ -24,10 +24,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.*;
 
 import java.io.*;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
+import java.nio.file.*;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
@@ -64,12 +61,16 @@ public class Main implements Callable<Integer> {
 
     public int execute(Config.Command command, List<String> parameters, InputStream stdin, OutputStream stdout, OutputStream stderr) {
         try {
-            Path path = Path.of(command.executable());
-            String glob = String.format("glob:%s", path.getFileName());
+            int slash = command.executable().lastIndexOf('/');
+            Path parent = Path.of(".");
+            if (slash != -1) {
+                parent = Path.of(command.executable().substring(0, slash));
+            }
+            String glob = String.format("glob:%s", command.executable().substring(slash+1));
             PathMatcher matcher = FileSystems.getDefault().getPathMatcher(glob);
 
             Path exe;
-            try (Stream<Path> paths = Files.find(path.getParent(), 1,
+            try (Stream<Path> paths = Files.find(parent, 1,
                     (file, attr) -> matcher.matches(file.getFileName()))) {
                 exe = paths.findFirst().orElseThrow(() -> {
                     String msg = String.format("Unable to locate executable at '%s'", command.executable());
