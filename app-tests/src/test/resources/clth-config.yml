@@ -10,7 +10,6 @@ tests:
       - command: clth
         criteria:
           match: contains
-          whitespace: trim
         stderr: Missing required parameter
         rc: 2
   - name: help flag
@@ -18,12 +17,10 @@ tests:
       - command: clth --help
         criteria:
           match: contains
-          whitespace: trim
         stdout: "Usage: clth"
   - name: version flag
     steps:
       - command: clth --version
         criteria:
           match: contains
-          whitespace: trim
         stdout: Command Line Test Harness

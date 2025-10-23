@@ -52,6 +52,8 @@ jobs:
 
       - name: "Test resulting 'clth' executable"
         shell: bash
+        env:
+          NO_COLOR: true
         run: |
           exe=$(find app/build/native/nativeCompile/ -type f)
           $exe -a app-tests/src/test/resources/clth-config.yml
