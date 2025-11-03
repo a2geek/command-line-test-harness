@@ -18,7 +18,7 @@ dependencies {
     // Usually this is a testImplementation, but since there is support code in the final jar, it must be this way!
     api "com.ginsberg:junit5-system-exit:2.0.2"
 
-    testImplementation platform('org.junit:junit-bom:6.0.0')
+    testImplementation platform('org.junit:junit-bom:6.0.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
