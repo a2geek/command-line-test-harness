@@ -11,7 +11,7 @@ repositories {
 
 dependencies {
     api "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.0"
-    api "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.20.0"
+    api "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.20.1"
     api "io.github.java-diff-utils:java-diff-utils:4.16"
 
     // See: https://github.com/tginsberg/junit5-system-exit
