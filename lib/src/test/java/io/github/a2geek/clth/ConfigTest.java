@@ -17,7 +17,12 @@
  */
 package io.github.a2geek.clth;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfigTest {
@@ -93,5 +98,51 @@ public class ConfigTest {
                 """;
         Config.TestFile binFile = new Config.TestFile(Config.FileType.binary, hex, "", "");
         assertArrayEquals(new byte[] { 0x20, 0x58, (byte)0xfc, 0x60 }, binFile.contentAsBytes());
+    }
+
+    @Test
+    public void testLoad_commandAsString() throws JsonProcessingException {
+        final String document = """
+            tests:
+              - name: command as string
+                steps:
+                  - command: cmd arg1 arg2 arg3
+            """;
+        Config config = Config.load(document);
+        assertEquals(1, config.tests().size());
+        Config.TestCase testCase = config.tests().getFirst();
+        assertEquals(1, testCase.steps().size());
+        Config.Step step = testCase.steps().getFirst();
+        assertEquals(4, step.command().size());
+        List<String> command = new ArrayList<>(step.command());
+        assertEquals("cmd", command.removeFirst());
+        assertEquals("arg1", command.removeFirst());
+        assertEquals("arg2", command.removeFirst());
+        assertEquals("arg3", command.removeFirst());
+    }
+
+    @Test
+    public void testLoad_commandAsArray() throws JsonProcessingException {
+        final String document = """
+            tests:
+              - name: command as string
+                steps:
+                  - command:
+                      - cmd
+                      - argument 1
+                      - argument 2
+                      - argument 3
+            """;
+        Config config = Config.load(document);
+        assertEquals(1, config.tests().size());
+        Config.TestCase testCase = config.tests().getFirst();
+        assertEquals(1, testCase.steps().size());
+        Config.Step step = testCase.steps().getFirst();
+        assertEquals(4, step.command().size());
+        List<String> command = new ArrayList<>(step.command());
+        assertEquals("cmd", command.removeFirst());
+        assertEquals("argument 1", command.removeFirst());
+        assertEquals("argument 2", command.removeFirst());
+        assertEquals("argument 3", command.removeFirst());
     }
 }

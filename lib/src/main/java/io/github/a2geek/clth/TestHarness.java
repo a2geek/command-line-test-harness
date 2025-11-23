@@ -32,18 +32,17 @@ public class TestHarness {
         for (int n=0; n<testSuite.steps().size(); n++) {
             Config.Step step = testSuite.steps().get(n);
             try {
-                String[] parts = step.command().split(" ");
-
-                if (!testSuite.commands().containsKey(parts[0])) {
-                    String msg = String.format("Expecting command named '%s' but it does not exist", parts[0]);
+                final String cmd = step.command().getFirst();
+                if (!testSuite.commands().containsKey(cmd)) {
+                    String msg = String.format("Expecting command named '%s' but it does not exist", cmd);
                     throw new RuntimeException(msg);
                 }
-                Config.Command command = testSuite.commands().get(parts[0]);
+                Config.Command command = testSuite.commands().get(cmd);
 
                 // Setup variables
                 List<String> parameters = new ArrayList<>();
-                for (int i=1; i<parts.length; i++) {
-                    parameters.add(testSuite.evaluateAsArgument(parts[i], testCaseFiles));
+                for (int i=1; i<step.command().size(); i++) {
+                    parameters.add(testSuite.evaluateAsArgument(step.command().get(i), testCaseFiles));
                 }
                 // Apply the file preservation logic
                 testCaseFiles.values().forEach(settings.filePreservation()::apply);
@@ -52,7 +51,7 @@ public class TestHarness {
                     parameters.removeLast();
                 }
 
-                settings.out.printf("\t%d: %s %s\n", n+1, parts[0], String.join(" ", parameters));
+                settings.out.printf("\t%d: %s %s\n", n+1, cmd, String.join(" ", parameters));
 
                 // Setup stdin
                 InputStream stdin = InputStream.nullInputStream();
