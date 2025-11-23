@@ -19,11 +19,16 @@ package io.github.a2geek.clth;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.databind.util.Converter;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +87,7 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
     public record TestCase(@JsonInclude(NON_EMPTY) String name,
                            @JsonSetter(nulls=Nulls.AS_EMPTY) Map<String,Object> variables,
                            @JsonInclude(NON_EMPTY) List<Step> steps) {}
-    public record Step(@JsonInclude(NON_EMPTY) String command,
+    public record Step(@JsonInclude(NON_EMPTY) @JsonDeserialize(converter = ArrayConverter.class) List<String> command,
                        @JsonSetter(nulls=Nulls.AS_EMPTY) String stdin,
                        @JsonSetter(nulls=Nulls.AS_EMPTY) String stdout,
                        @JsonSetter(nulls=Nulls.AS_EMPTY) String stderr,
@@ -144,6 +149,29 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
                     .map(s -> s.replaceAll("\\s+", " "))
                     .map(String::trim)
                     .collect(Collectors.joining("\n"));
+        }
+    }
+
+    public static class ArrayConverter implements Converter<Object,List<String>> {
+        @Override
+        public List<String> convert(Object value) {
+            if (value instanceof String str) {
+                return List.of(str.split(" "));
+            }
+            else if (value instanceof List<?> list) {
+                List<String> args = new ArrayList<>();
+                list.forEach(o -> args.add(o.toString()));
+                return args;
+            }
+            throw new RuntimeException("Unexpected source type: " + value.getClass().getName());
+        }
+        @Override
+        public JavaType getInputType(TypeFactory typeFactory) {
+            return typeFactory.constructType(Object.class);
+        }
+        @Override
+        public JavaType getOutputType(TypeFactory typeFactory) {
+            return typeFactory.constructCollectionType(List.class, String.class);
         }
     }
 }
