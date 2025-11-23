@@ -1,9 +1,13 @@
 {
-  "resources": {
-    "includes": [
-      {
-        "pattern": "META-INF/MANIFEST.MF"
-      }
-    ]
-  }
+  "resources":{
+  "includes":[{
+    "pattern":"META-INF/MANIFEST.MF"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.lang.System$LoggerFinder\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.time.zone.ZoneRulesProvider\\E"
+  }, {
+    "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/nfc.nrm\\E"
+  }]},
+  "bundles":[]
 }
