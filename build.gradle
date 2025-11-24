@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'io.github.a2geek'
-version = '2.1'
+version = '3.0-SNAPSHOT'
 
 ext {
     isSnapshotVersion = version.endsWith("SNAPSHOT")
