@@ -38,6 +38,14 @@ application {
     mainClass = 'io.github.a2geek.clth.app.Main'
 }
 
+// Disable all Spring AOT processing
+processAot.configure {
+    enabled = false;
+}
+processTestAot.configure {
+    enabled = false;
+}
+
 bootJar {
     archiveBaseName = 'clth'
     manifest {
