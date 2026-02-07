@@ -72,12 +72,16 @@ public class TestHarness {
                 }
 
                 // Check stdout
-                byte[] expectedStdout = testSuite.evaluateAsBytes(step.stdout(), settings);
-                handleOutput("stdout", step, settings, new String(expectedStdout), stdout.toString(), errors);
+                if (step.stdout() != null) {
+                    byte[] expectedStdout = testSuite.evaluateAsBytes(step.stdout(), settings);
+                    handleOutput("stdout", step, settings, new String(expectedStdout), stdout.toString(), errors);
+                }
 
                 // Check stderr
-                byte[] expectedStderr = testSuite.evaluateAsBytes(step.stderr(), settings);
-                handleOutput("stderr", step, settings, new String(expectedStderr), stderr.toString(), errors);
+                if (step.stderr() != null) {
+                    byte[] expectedStderr = testSuite.evaluateAsBytes(step.stderr(), settings);
+                    handleOutput("stderr", step, settings, new String(expectedStderr), stderr.toString(), errors);
+                }
 
                 if (!errors.isEmpty()) {
                     throw new RuntimeException("Errors encountered: " + errors);

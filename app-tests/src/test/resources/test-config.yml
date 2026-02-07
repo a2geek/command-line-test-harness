@@ -62,3 +62,7 @@ tests:
         criteria:
           match: exact
         stdout: "Hello World"
+  - name: ignoring stdout
+    steps:
+      - command: echo This is ignored
+        # Note no stdout, which indicates the output is ignored
