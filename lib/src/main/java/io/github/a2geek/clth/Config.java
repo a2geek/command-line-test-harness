@@ -89,8 +89,8 @@ public record Config(@JsonInclude(NON_EMPTY) Map<String,Command> commands,
                            @JsonInclude(NON_EMPTY) List<Step> steps) {}
     public record Step(@JsonInclude(NON_EMPTY) @JsonDeserialize(converter = ArrayConverter.class) List<String> command,
                        @JsonSetter(nulls=Nulls.AS_EMPTY) String stdin,
-                       @JsonSetter(nulls=Nulls.AS_EMPTY) String stdout,
-                       @JsonSetter(nulls=Nulls.AS_EMPTY) String stderr,
+                       @JsonSetter(nulls=Nulls.SET) String stdout,
+                       @JsonSetter(nulls=Nulls.SET) String stderr,
                        MatchCriteria criteria,
                        @JsonProperty("rc") int returnCode) {
         @Override
