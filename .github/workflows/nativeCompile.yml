@@ -62,7 +62,7 @@ jobs:
           $exe -a app-tests/src/test/resources/clth-config.yml
 
       - name: Upload binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: clth-${{ matrix.os }}-${{ matrix.arch }}
           path: app/build/native/nativeCompile/clth-*
