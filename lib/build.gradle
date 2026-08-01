@@ -16,7 +16,7 @@ dependencies {
 
     // See: https://github.com/tginsberg/junit5-system-exit
     // Usually this is a testImplementation, but since there is support code in the final jar, it must be this way!
-    api "com.ginsberg:junit5-system-exit:2.0.2"
+    api "com.ginsberg:junit5-system-exit:2.0.3"
 
     testImplementation platform('org.junit:junit-bom:6.0.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
